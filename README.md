@@ -1,94 +1,185 @@
-# 10x Astro Starter
+# MetalPathfinder
 
-A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
+A web-based MVP that enables metal music enthusiasts to discover new tracks by describing what they appreciate in a selected piece from their library. The system integrates with Spotify for authentication and audio previews, and utilizes OpenAI API to generate personalized recommendations.
+
+## Table of Contents
+
+- [Project Description](#project-description)
+- [Tech Stack](#tech-stack)
+- [Getting Started Locally](#getting-started-locally)
+- [Available Scripts](#available-scripts)
+- [Project Scope](#project-scope)
+- [Project Status](#project-status)
+- [License](#license)
+
+## Project Description
+
+MetalPathfinder is an educational project that addresses the challenge metal music listeners face when trying to discover new music beyond their comfort zone. The application allows users to:
+
+- **Authenticate via Spotify OAuth** to access their music library
+- **Describe musical preferences** in natural language for selected tracks
+- **Receive AI-powered recommendations** with explanations and artist biographies
+- **Control recommendation style** via a popularity slider (Popular ↔ Niche)
+- **Preview 30-second audio clips** directly in the app
+- **Manage their music library** by adding/removing tracks
+- **Block unwanted recommendations** for specified time periods
+
+### Key Features
+
+- Responsive design (320px+ viewport support)
+- Integration with Spotify Web API for music data and previews
+- AI-powered music recommendations via OpenAI API
+- Personal music library management
+- Smart content filtering and blocking system
+- Real-time audio preview player
 
 ## Tech Stack
 
-- [Astro](https://astro.build/) v5.5.5 - Modern web framework for building fast, content-focused websites
-- [React](https://react.dev/) v19.0.0 - UI library for building interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
+### Frontend
 
-## Prerequisites
+- **Astro 5** - Fast, modern web framework with minimal JavaScript
+- **React 19** - Interactive components where needed
+- **TypeScript 5** - Static typing for better development experience
+- **Tailwind CSS 4** - Utility-first CSS framework
+- **Shadcn/ui** - Accessible React component library
 
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
+### Backend
 
-## Getting Started
+- **Supabase** - Complete backend-as-a-service solution
+  - PostgreSQL database
+  - Built-in user authentication
+  - Real-time subscriptions
+  - RESTful API
 
-1. Clone the repository:
+### AI Integration
 
-```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
-```
+- **OpenAI API** - Direct integration with OpenAI's language models
+- Advanced prompt engineering for music recommendations
 
-2. Install dependencies:
+### Development & Deployment
 
-```bash
-npm install
-```
+- **GitHub Actions** - CI/CD pipeline
+- **DigitalOcean** - Cloud hosting with Docker containers
+- **ESLint & Prettier** - Code quality and formatting
+- **Husky** - Git hooks for pre-commit validation
 
-3. Run the development server:
+## Getting Started Locally
 
-```bash
-npm run dev
-```
+### Prerequisites
 
-4. Build for production:
+- **Node.js** 22.14.0 (specified in `.nvmrc`)
+- **Bun** (recommended) or npm
+- **Spotify Developer Account** for API credentials
+- **OpenAI API key** for AI recommendations
+- **Supabase project** for database and authentication
 
-```bash
-npm run build
-```
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone <repository-url>
+   cd metal-pathfinder
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   bun install
+   # or
+   npm install
+   ```
+
+3. **Set up environment variables**
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   Configure the following variables:
+
+   - `SPOTIFY_CLIENT_ID`
+   - `SPOTIFY_CLIENT_SECRET`
+   - `OPENAI_API_KEY`
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`
+
+4. **Run the development server**
+
+   ```bash
+   bun run dev
+   ```
+
+5. **Open the application**
+   Navigate to `http://localhost:4321` in your browser
 
 ## Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
+| Script             | Description                          |
+| ------------------ | ------------------------------------ |
+| `bun run dev`      | Start the development server         |
+| `bun run build`    | Build the application for production |
+| `bun run preview`  | Preview the production build locally |
+| `bun run astro`    | Run Astro CLI commands               |
+| `bun run lint`     | Run ESLint to check code quality     |
+| `bun run lint:fix` | Fix auto-fixable ESLint issues       |
+| `bun run format`   | Format code with Prettier            |
 
-## Project Structure
+## Project Scope
 
-```md
-.
-├── src/
-│   ├── layouts/    # Astro layouts
-│   ├── pages/      # Astro pages
-│   │   └── api/    # API endpoints
-│   ├── components/ # UI components (Astro & React)
-│   └── assets/     # Static assets
-├── public/         # Public assets
-```
+### ✅ In Scope (MVP)
 
-## AI Development Support
+**Core Functionality:**
 
-This project is configured with AI development tools to enhance the development experience, providing guidelines for:
+- Spotify OAuth authentication and user onboarding
+- Music library management (add, remove, view tracks)
+- AI-powered music discovery with natural language descriptions
+- Audio preview integration (30-second clips)
+- Recommendation blocking system (1 day, 7 days, forever)
+- Responsive UI design (320px to desktop)
+- Artist biography generation
 
-- Project structure
-- Coding practices
-- Frontend development
-- Styling with Tailwind
-- Accessibility best practices
-- Astro and React guidelines
+**Technical Features:**
 
-### Cursor IDE
+- Real-time API integrations (Spotify, OpenAI)
+- Online database storage (Supabase)
+- Error handling for network and API failures
+- Performance monitoring and optimization
 
-The project includes AI rules in `.cursor/rules/` directory that help Cursor IDE understand the project structure and provide better code suggestions.
+### ❌ Out of Scope (Future Versions)
 
-### GitHub Copilot
+- Social features (sharing, friends, comments)
+- Advanced analytics and ML on listening history
+- Multiple streaming service integrations
+- Full track playback within the app
+- Premium features (playlist export, advanced filtering)
+- Offline mode and local file synchronization
+- Complex genre filtering and statistics
 
-AI instructions for GitHub Copilot are available in `.github/copilot-instructions.md`
+## Project Status
 
-### Windsurf
+🚧 **In Development** - MVP Phase
 
-The `.windsurfrules` file contains AI configuration for Windsurf.
+This is an educational project currently in active development. The application is being built as a functional prototype to validate the concept of AI-powered metal music discovery.
 
-## Contributing
+### Success Metrics
 
-Please follow the AI guidelines and coding practices defined in the AI configuration files when contributing to this project.
+**Product Goals:**
+
+- ≥3 discovery sessions per user per week
+- ≥30% of recommended tracks added to user libraries
+
+**Technical Goals:**
+
+- 99% uptime for Spotify and OpenAI API calls
+- ≤2s first content render time on 4G networks
+- 100% e2e test coverage for critical user paths
+- Responsive design compatibility from 320px to desktop
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**Note:** This is an educational project created to explore modern web development practices and AI integration in music discovery applications. All features are provided free of charge.
