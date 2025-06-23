@@ -4,7 +4,34 @@ import type { ValidationError as ValidationErrorType } from "./validation";
 /**
  * Custom error classes for different error scenarios
  */
+
+/**
+ * Base class for business rule violations (400 Bad Request)
+ */
+export abstract class BusinessRuleError extends Error {
+  public readonly statusCode = 400;
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+/**
+ * Base class for resource not found errors (404 Not Found)
+ */
+export abstract class NotFoundError extends Error {
+  public readonly statusCode = 404;
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+/**
+ * Base class for validation errors (422 Unprocessable Entity)
+ */
 export class ValidationError extends Error {
+  public readonly statusCode = 422;
   constructor(
     message: string,
     public errors: ValidationErrorType[]
@@ -14,14 +41,71 @@ export class ValidationError extends Error {
   }
 }
 
-export class DuplicateTrackError extends Error {
-  constructor(message: string = "Track already exists in your library") {
+/**
+ * Error thrown when trying to add duplicate track to library
+ */
+export class DuplicateTrackError extends BusinessRuleError {
+  constructor(message = "Track already exists in your library") {
     super(message);
-    this.name = "DuplicateTrackError";
   }
 }
 
+/**
+ * Error thrown when trying to remove the last track from library
+ * Business rule: User must have at least one track in library
+ */
+export class LastTrackError extends BusinessRuleError {
+  constructor(
+    message = "Cannot remove last track from library",
+    public currentTrackCount = 1
+  ) {
+    super(message);
+  }
+}
+
+/**
+ * Error thrown when trying to block a track that's already in user's library
+ * Business rule: User cannot block tracks that are in their library
+ */
+export class TrackInLibraryError extends BusinessRuleError {
+  constructor(
+    message = "Cannot block track that exists in your library",
+    public spotifyTrackId?: string
+  ) {
+    super(message);
+  }
+}
+
+/**
+ * Error thrown when trying to add a blocked track to user's library
+ * Business rule: User cannot add blocked tracks to their library
+ */
+export class TrackBlockedError extends BusinessRuleError {
+  constructor(
+    message = "Cannot add blocked track to your library",
+    public spotifyTrackId?: string
+  ) {
+    super(message);
+  }
+}
+
+/**
+ * Error thrown when requested track is not found in user's library
+ */
+export class TrackNotFoundError extends NotFoundError {
+  constructor(
+    message = "Track not found in user's library",
+    public requestedTrackId?: string
+  ) {
+    super(message);
+  }
+}
+
+/**
+ * Error thrown for database/infrastructure problems (500 Internal Server Error)
+ */
 export class DatabaseError extends Error {
+  public readonly statusCode = 500;
   constructor(
     message: string,
     public originalError?: Error
@@ -60,7 +144,7 @@ export function createValidationErrorResponse(
 /**
  * Logs error with appropriate level based on error type
  */
-export function logError(error: Error, context?: Record<string, any>) {
+export function logError(error: Error, context?: Record<string, unknown>) {
   const logData = {
     error: error.name,
     message: error.message,
@@ -68,7 +152,14 @@ export function logError(error: Error, context?: Record<string, any>) {
     timestamp: new Date().toISOString(),
   };
 
-  if (error instanceof ValidationError || error instanceof DuplicateTrackError) {
+  if (
+    error instanceof ValidationError ||
+    error instanceof DuplicateTrackError ||
+    error instanceof LastTrackError ||
+    error instanceof TrackNotFoundError ||
+    error instanceof TrackInLibraryError ||
+    error instanceof TrackBlockedError
+  ) {
     console.info("API Error:", logData);
   } else if (error instanceof DatabaseError) {
     console.error("Database Error:", logData, error.originalError);

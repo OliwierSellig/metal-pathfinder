@@ -191,6 +191,15 @@ CREATE TRIGGER trigger_cleanup_on_blocked_tracks_insert
 - CASCADE DELETE automatycznie czyści dane usuniętych użytkowników
 - CHECK constraints zapewniają integralność danych
 
+### Reguły biznesowe
+
+- **Library-Block Conflict Prevention**:
+  - Użytkownik nie może zablokować utworu, który już istnieje w jego bibliotece
+  - Użytkownik nie może dodać do biblioteki utworu, który jest aktualnie zablokowany
+- **Last Track Protection**: Użytkownik nie może usunąć ostatniego utworu ze swojej biblioteki
+- **Duplicate Prevention**: Automatyczne zapobieganie duplikatom w obu tabelach przez UNIQUE constraints
+- **Active Block Detection**: Blokady są aktywne gdy `expires_at` jest NULL (permanent) lub > NOW()
+
 ### Wydajność
 
 - Indeksy zoptymalizowane pod najpopularniejsze zapytania

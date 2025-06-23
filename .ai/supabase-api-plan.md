@@ -77,7 +77,7 @@
 
 **Error Codes:**
 
-- `400 Bad Request` - Invalid spotify_track_id or track already in library
+- `400 Bad Request` - Invalid spotify_track_id, track already in library, or track is currently blocked
 - `401 Unauthorized` - Invalid authentication
 - `422 Unprocessable Entity` - Validation errors
 
@@ -173,7 +173,7 @@
 
 **Error Codes:**
 
-- `400 Bad Request` - Invalid spotify_track_id or duration
+- `400 Bad Request` - Invalid spotify_track_id, duration, or track exists in user's library
 - `401 Unauthorized` - Invalid authentication
 - `409 Conflict` - Track already blocked
 
@@ -238,6 +238,7 @@ const authMiddleware = async (req: Request) => {
 - `spotify_track_id`: Required, exactly 22 characters, alphanumeric
 - Uniqueness: Enforced by database constraint `unique_user_track`
 - Minimum library size: Cannot delete last track from library
+- **Block conflict prevention**: Cannot add tracks that are currently blocked
 
 #### Blocked Tracks
 
@@ -245,6 +246,7 @@ const authMiddleware = async (req: Request) => {
 - `duration`: Must be one of ["1d", "7d", "permanent"]
 - Uniqueness: Enforced by database constraint `unique_user_blocked_track`
 - Expiry validation: `expires_at` must be greater than `created_at` when not null
+- **Library conflict prevention**: Cannot block tracks that exist in user's library
 
 ### Business Logic Implementation
 
@@ -265,6 +267,46 @@ const calculateExpiryDate = (duration: string): Date | null => {
 };
 ```
 
+#### Business Rules Validation
+
+```typescript
+// Before blocking a track, validate business rules:
+const blockTrack = async (userId: string, spotifyTrackId: string) => {
+  // 1. Check if track exists in user's library
+  const libraryTrack = await checkUserLibrary(userId, spotifyTrackId);
+  if (libraryTrack) {
+    throw new TrackInLibraryError("Cannot block track that exists in your library");
+  }
+
+  // 2. Check if track is already blocked
+  const existingBlock = await checkExistingBlock(userId, spotifyTrackId);
+  if (existingBlock) {
+    throw new DuplicateTrackError("Track already blocked");
+  }
+
+  // 3. Proceed with blocking
+  return createBlock(userId, spotifyTrackId, duration);
+};
+
+// Before adding track to library, validate business rules:
+const addTrackToLibrary = async (userId: string, spotifyTrackId: string) => {
+  // 1. Check if track is currently blocked (active block)
+  const blockedTrack = await checkActiveBlock(userId, spotifyTrackId);
+  if (blockedTrack) {
+    throw new TrackBlockedError("Cannot add blocked track to your library");
+  }
+
+  // 2. Check if track already exists in library
+  const existingTrack = await checkLibraryDuplicate(userId, spotifyTrackId);
+  if (existingTrack) {
+    throw new DuplicateTrackError("Track already exists in your library");
+  }
+
+  // 3. Proceed with adding to library
+  return addToLibrary(userId, spotifyTrackId);
+};
+```
+
 #### Automatic Cleanup
 
 - Expired blocks are cleaned up automatically via database triggers
@@ -276,6 +318,32 @@ const calculateExpiryDate = (duration: string): Date | null => {
 - Proper HTTP status codes
 - User-friendly error messages
 - Detailed logging for debugging (without exposing sensitive data)
+
+#### Common Error Response Format
+
+```json
+{
+  "error": "Error Type",
+  "message": "Human readable message",
+  "status": 400
+}
+```
+
+#### Business Rule Violations (400 Bad Request)
+
+- **Track in Library Conflict**: `"Cannot block track that exists in your library"`
+- **Track Blocked Conflict**: `"Cannot add blocked track to your library"`
+- **Last Track Protection**: `"Cannot remove last track from library"`
+- **Duplicate Track**: `"Track already exists in your library"`
+
+#### Resource Not Found (404 Not Found)
+
+- **Track Not Found**: `"Track not found in user's library"`
+- **Block Not Found**: `"Track not blocked by user"`
+
+#### Conflict Errors (409 Conflict)
+
+- **Duplicate Block**: `"Track already blocked"`
 
 ### Rate Limiting
 
