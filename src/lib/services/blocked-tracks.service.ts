@@ -120,6 +120,65 @@ export class BlockedTracksService {
   }
 
   /**
+   * Retrieves all currently active blocked tracks for a user (for exclusion purposes)
+   * @param userId - User ID (UUID)
+   * @returns Blocked tracks response with only active blocked tracks
+   * @throws DatabaseError for database-related errors
+   */
+  async getActiveBlockedTracks(userId: string): Promise<BlockedTracksResponseDTO> {
+    try {
+      // Query only active blocked tracks (permanent or not yet expired)
+      const { data: tracks, error: tracksError } = await this.supabase
+        .from("blocked_tracks")
+        .select("spotify_track_id, expires_at, created_at")
+        .eq("user_id", userId)
+        .or("expires_at.is.null,expires_at.gt.now()")
+        .order("created_at", { ascending: false });
+
+      if (tracksError) {
+        logError(new DatabaseError("Failed to fetch active blocked tracks", tracksError), {
+          operation: "get_active_blocked_tracks",
+          user_id: userId,
+        });
+        throw new DatabaseError("Failed to fetch active blocked tracks");
+      }
+
+      // Transform entities to DTOs with computed is_active field (all will be true)
+      const blockedTracksDTO: BlockedTrackDTO[] = (tracks || []).map((track) => ({
+        spotify_track_id: track.spotify_track_id,
+        expires_at: track.expires_at,
+        created_at: track.created_at,
+        is_active: true, // All results are active by query design
+      }));
+
+      // Log successful operation
+      console.info("Active blocked tracks retrieved successfully", {
+        operation: "get_active_blocked_tracks",
+        user_id: userId,
+        returned_tracks: blockedTracksDTO.length,
+        timestamp: new Date().toISOString(),
+      });
+
+      return {
+        blocked_tracks: blockedTracksDTO,
+        total_count: blockedTracksDTO.length,
+      };
+    } catch (error) {
+      // Re-throw known errors
+      if (error instanceof DatabaseError) {
+        throw error;
+      }
+
+      // Handle unexpected errors
+      logError(new DatabaseError("Unexpected error in getActiveBlockedTracks", error as Error), {
+        operation: "get_active_blocked_tracks",
+        user_id: userId,
+      });
+      throw new DatabaseError("An unexpected error occurred while retrieving active blocked tracks");
+    }
+  }
+
+  /**
    * Determines if a blocked track is currently active (not expired)
    * @param track - Partial blocked track data from database query
    * @returns true if block is active (permanent or not yet expired)

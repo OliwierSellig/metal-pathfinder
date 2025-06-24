@@ -249,61 +249,78 @@ export class LibraryService {
    * Removes a track from user's library
    * @param userId - User ID (UUID)
    * @param spotifyTrackId - Validated Spotify track ID
-   * @throws LastTrackError if attempting to remove the last track
    * @throws TrackNotFoundError if track doesn't exist in library
+   * @throws LastTrackError if attempting to remove the last track
    * @throws DatabaseError for database-related errors
    */
   async removeTrackFromLibrary(userId: string, spotifyTrackId: SpotifyTrackId): Promise<void> {
     try {
-      // First, check the total count of tracks in user's library
-      const { count: totalCount, error: countError } = await this.supabase
+      // First check if track exists in user's library
+      const { data: existingTrack, error: checkError } = await this.supabase
+        .from("user_library")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("spotify_track_id", spotifyTrackId)
+        .maybeSingle();
+
+      if (checkError) {
+        logError(new DatabaseError("Failed to check for existing track", checkError), {
+          operation: "check_track_exists",
+          user_id: userId,
+          spotify_track_id: spotifyTrackId,
+        });
+        throw new DatabaseError("Failed to check for existing track");
+      }
+
+      if (!existingTrack) {
+        logError(new TrackNotFoundError("Track not found in user's library", spotifyTrackId), {
+          operation: "remove_track_from_library",
+          user_id: userId,
+          spotify_track_id: spotifyTrackId,
+        });
+        throw new TrackNotFoundError("Track not found in user's library");
+      }
+
+      // Check total number of tracks to enforce minimum library size
+      const { count: totalTracks, error: countError } = await this.supabase
         .from("user_library")
         .select("*", { count: "exact", head: true })
         .eq("user_id", userId);
 
       if (countError) {
-        logError(new DatabaseError("Failed to count user's library tracks", countError), {
-          operation: "count_library_tracks",
+        logError(new DatabaseError("Failed to get library count", countError), {
+          operation: "check_library_count",
           user_id: userId,
         });
-        throw new DatabaseError("Failed to count user's library tracks");
+        throw new DatabaseError("Failed to get library count");
       }
 
-      // Enforce business rule: cannot remove last track from library
-      if (totalCount === 1) {
-        logError(new LastTrackError(), {
+      // Business rule: User must have at least one track in library
+      if (totalTracks === 1) {
+        logError(new LastTrackError("Cannot remove last track from library", totalTracks), {
           operation: "remove_track_from_library",
           user_id: userId,
           spotify_track_id: spotifyTrackId,
-          total_count: totalCount,
+          violation: "last_track_protection",
+          current_count: totalTracks,
         });
-        throw new LastTrackError();
+        throw new LastTrackError("Cannot remove last track from library");
       }
 
-      // Attempt to delete the track
-      const { count: deletedCount, error: deleteError } = await this.supabase
+      // Remove track from library
+      const { error: deleteError } = await this.supabase
         .from("user_library")
-        .delete({ count: "exact" })
+        .delete()
         .eq("user_id", userId)
         .eq("spotify_track_id", spotifyTrackId);
 
       if (deleteError) {
-        logError(new DatabaseError("Failed to delete track from library", deleteError), {
+        logError(new DatabaseError("Failed to remove track from library", deleteError), {
           operation: "remove_track_from_library",
           user_id: userId,
           spotify_track_id: spotifyTrackId,
         });
-        throw new DatabaseError("Failed to delete track from library");
-      }
-
-      // Check if track was actually found and deleted
-      if (deletedCount === 0) {
-        logError(new TrackNotFoundError(), {
-          operation: "remove_track_from_library",
-          user_id: userId,
-          spotify_track_id: spotifyTrackId,
-        });
-        throw new TrackNotFoundError();
+        throw new DatabaseError("Failed to remove track from library");
       }
 
       // Log successful operation
@@ -311,11 +328,12 @@ export class LibraryService {
         operation: "remove_track_from_library",
         user_id: userId,
         spotify_track_id: spotifyTrackId,
+        remaining_tracks: (totalTracks || 1) - 1,
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
       // Re-throw known errors
-      if (error instanceof LastTrackError || error instanceof TrackNotFoundError || error instanceof DatabaseError) {
+      if (error instanceof TrackNotFoundError || error instanceof LastTrackError || error instanceof DatabaseError) {
         throw error;
       }
 
@@ -325,7 +343,49 @@ export class LibraryService {
         user_id: userId,
         spotify_track_id: spotifyTrackId,
       });
-      throw new DatabaseError("An unexpected error occurred");
+      throw new DatabaseError("An unexpected error occurred while removing track from library");
+    }
+  }
+
+  /**
+   * Checks if a track exists in user's library
+   * @param userId - User ID (UUID)
+   * @param spotifyTrackId - Spotify track ID to check
+   * @returns True if track exists in library, false otherwise
+   * @throws DatabaseError for database-related errors
+   */
+  async isTrackInLibrary(userId: string, spotifyTrackId: string): Promise<boolean> {
+    try {
+      const { data: existingTrack, error: checkError } = await this.supabase
+        .from("user_library")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("spotify_track_id", spotifyTrackId)
+        .maybeSingle();
+
+      if (checkError) {
+        logError(new DatabaseError("Failed to check if track exists in library", checkError), {
+          operation: "is_track_in_library",
+          user_id: userId,
+          spotify_track_id: spotifyTrackId,
+        });
+        throw new DatabaseError("Failed to check if track exists in library");
+      }
+
+      return existingTrack !== null;
+    } catch (error) {
+      // Re-throw known errors
+      if (error instanceof DatabaseError) {
+        throw error;
+      }
+
+      // Handle unexpected errors
+      logError(new DatabaseError("Unexpected error in isTrackInLibrary", error as Error), {
+        operation: "is_track_in_library",
+        user_id: userId,
+        spotify_track_id: spotifyTrackId,
+      });
+      throw new DatabaseError("An unexpected error occurred while checking track in library");
     }
   }
 }

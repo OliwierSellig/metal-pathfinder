@@ -42,6 +42,36 @@ export class ValidationError extends Error {
 }
 
 /**
+ * Error thrown when AI generation fails
+ */
+export class AIGenerationError extends Error {
+  public readonly statusCode = 422;
+  constructor(
+    message: string,
+    public originalError?: Error
+  ) {
+    super(message);
+    this.name = "AIGenerationError";
+  }
+}
+
+/**
+ * Error thrown when OpenAI API is unavailable
+ */
+export class OpenAIAPIError extends Error {
+  public readonly statusCode: number;
+  constructor(
+    message: string,
+    statusCode = 503,
+    public originalError?: Error
+  ) {
+    super(message);
+    this.name = "OpenAIAPIError";
+    this.statusCode = statusCode;
+  }
+}
+
+/**
  * Error thrown when trying to add duplicate track to library
  */
 export class DuplicateTrackError extends BusinessRuleError {
@@ -112,6 +142,24 @@ export class DatabaseError extends Error {
   ) {
     super(message);
     this.name = "DatabaseError";
+  }
+}
+
+/**
+ * Error thrown for Spotify API integration issues
+ * Used for external service failures and API communication problems
+ */
+export class SpotifyAPIError extends Error {
+  public readonly statusCode: number;
+
+  constructor(
+    message: string,
+    statusCode = 503,
+    public originalError?: Error
+  ) {
+    super(message);
+    this.name = "SpotifyAPIError";
+    this.statusCode = statusCode;
   }
 }
 
