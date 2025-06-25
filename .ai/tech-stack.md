@@ -17,7 +17,7 @@ Backend - Supabase jako kompleksowe rozwiązanie backendowe:
 Spotify Integration - Client Credentials Flow:
 
 - Jeden zestaw Client ID/Secret dla całej aplikacji (przechowywany bezpiecznie w zmiennych środowiskowych)
-- Publiczne API endpoints Spotify (search, track metadata, audio previews)
+- Publiczne API endpoints Spotify (search, track metadata)
 - Brak dostępu do prywatnych danych użytkowników Spotify
 - Rate limiting: 100 requests/sec (wystarczające dla aplikacji kursowej)
 

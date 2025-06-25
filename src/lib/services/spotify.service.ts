@@ -160,7 +160,6 @@ export class SpotifyService {
           ),
         },
         duration_ms: track.duration_ms,
-        preview_url: track.preview_url,
       }));
 
       const result: SearchTrackResponseDTO = {
@@ -253,7 +252,7 @@ export class SpotifyService {
           (artist): SpotifyArtistDetailsDTO => ({
             name: artist.name,
             spotify_artist_id: artist.id,
-            genres: artist.genres,
+            genres: artist.genres || [], // Handle undefined/null genres
           })
         ),
         album: {
@@ -270,7 +269,6 @@ export class SpotifyService {
           ),
         },
         duration_ms: trackData.duration_ms,
-        preview_url: trackData.preview_url,
         explicit: trackData.explicit,
         popularity: trackData.popularity,
       };
@@ -370,7 +368,7 @@ export class SpotifyService {
               (artist): SpotifyArtistDetailsDTO => ({
                 name: artist.name,
                 spotify_artist_id: artist.id,
-                genres: artist.genres,
+                genres: artist.genres || [], // Handle undefined/null genres
               })
             ),
             album: {
@@ -387,7 +385,6 @@ export class SpotifyService {
               ),
             },
             duration_ms: trackData.duration_ms,
-            preview_url: trackData.preview_url,
             explicit: trackData.explicit,
             popularity: trackData.popularity,
           })
@@ -452,11 +449,35 @@ export class SpotifyService {
       // Build search query: "song title" artist:"artist name"
       const searchQuery = `"${songTitle.trim()}" artist:"${artistName.trim()}"`;
 
+      // DETAILED LOGGING: Log the search query we're about to send
+      console.info("DETAILED: Spotify search query", {
+        operation: "spotify_search_track_detailed",
+        original_song_title: songTitle,
+        original_artist_name: artistName,
+        formatted_search_query: searchQuery,
+        market,
+        timestamp: new Date().toISOString(),
+      });
+
       const searchResults = await this.searchTracks({
         q: searchQuery,
         limit: 1, // Only need the most popular result
         offset: 0,
         market,
+      });
+
+      // DETAILED LOGGING: Log the raw search results from Spotify
+      console.info("DETAILED: Spotify search raw results", {
+        operation: "spotify_search_track_raw_results",
+        search_query: searchQuery,
+        total_results_found: searchResults.total,
+        tracks_returned: searchResults.tracks.length,
+        raw_tracks: searchResults.tracks.map((track) => ({
+          spotify_id: track.spotify_track_id,
+          name: track.name,
+          artists: track.artists.map((a) => a.name),
+        })),
+        timestamp: new Date().toISOString(),
       });
 
       // Check if we found any results

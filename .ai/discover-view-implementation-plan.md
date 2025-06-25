@@ -2,7 +2,7 @@
 
 ## 1. Przegląd
 
-Widok `Discover` jest centralnym punktem aplikacji, umożliwiającym użytkownikom odkrywanie nowej muzyki metalowej za pomocą AI. Użytkownik wybiera utwór bazowy ze swojej biblioteki, opisuje swoje preferencje i ustawia "temperaturę" (popularność vs. nisza), na podstawie których system generuje 10 spersonalizowanych rekomendacji. Każda rekomendacja zawiera podgląd audio, uzasadnienie AI oraz biografię artysty. Widok obsługuje również dodawanie utworów do biblioteki i ich blokowanie.
+Widok `Discover` jest centralnym punktem aplikacji, umożliwiającym użytkownikom odkrywanie nowej muzyki metalowej za pomocą AI. Użytkownik wybiera utwór bazowy ze swojej biblioteki, opisuje swoje preferencje i ustawia "temperaturę" (popularność vs. nisza), na podstawie których system generuje 10 spersonalizowanych rekomendacji. Każda rekomendacja zawiera uzasadnienie AI oraz biografię artysty. Widok obsługuje również dodawanie utworów do biblioteki i ich blokowanie.
 
 ## 2. Routing widoku
 
@@ -28,7 +28,7 @@ DiscoverPage.astro
     ├── RecommendationsList
     │   ├── (LoadingSkeleton / EmptyState / ErrorState)
     │   └── RecommendationCard[]
-    │       ├── AudioPlayer
+    │       ├── MetadataDisplay
     │       ├── (Shadcn Button "Add to Library")
     │       ├── (Shadcn DropdownMenu "Block Track")
     │       └── (Shadcn Button "Details")
@@ -87,7 +87,7 @@ Komponenty interaktywne będą renderowane po stronie klienta (`client:load`).
 ### RecommendationCard
 
 - **Opis**: Karta prezentująca pojedynczą rekomendację z informacjami o utworze, odtwarzaczem i akcjami.
-- **Główne elementy**: `img` (okładka), `p` (tytuł, artysta), `AudioPlayer`, `Button` (Shadcn "Add"), `DropdownMenu` (Shadcn "Block"), `Button` (Shadcn "Details").
+- **Główne elementy**: `img` (okładka), `p` (tytuł, artysta), `MetadataDisplay`, `Button` (Shadcn "Add"), `DropdownMenu` (Shadcn "Block"), `Button` (Shadcn "Details").
 - **Obsługiwane interakcje**: `onClick` na przyciskach akcji.
 - **Obsługiwana walidacja**: Brak.
 - **Typy**: `RecommendationCardViewModel`.
@@ -138,9 +138,9 @@ Stan będzie zarządzany centralnie w komponencie `DiscoverView` za pomocą hook
   - **Cel**: Separacja logiki od prezentacji. Zarządza obiektem `DiscoverViewState`, obsługuje wywołania API i aktualizuje stan w odpowiedzi na akcje użytkownika.
   - **Zwraca**: Obiekt ze stanem (`viewState`) i handlerami (`handlers`), które zostaną przekazane do komponentów podrzędnych.
 
-- **`useAudioPlayer` (Globalny Hook/Context)**:
-  - **Cel**: Zapewnienie, że w danym momencie odtwarzany jest tylko jeden podgląd audio.
-  - **Stan**: Przechowuje referencję do aktualnie odtwarzanego `HTMLAudioElement` i jego `preview_url`.
+- **`useGlobalState` (Globalny Hook/Context)**:
+- **Cel**: Zapewnienie globalnego stanu aplikacji dla komponentów.
+- **Stan**: Przechowuje stan aplikacji bez funkcji audio.
   - **Działanie**: Gdy wywoływana jest funkcja `play(newUrl)`, hook najpierw zatrzymuje poprzedni dźwięk, a następnie uruchamia nowy. Będzie dostarczany przez React Context API na poziomie `DiscoverView`.
 
 ## 7. Integracja API
@@ -176,7 +176,7 @@ Widok będzie komunikował się z czterema głównymi endpointami:
 - **Opis preferencji**: Użytkownik wpisuje tekst w `Textarea`, co aktualizuje stan i jest walidowane na bieżąco.
 - **Ustawienie temperatury**: Użytkownik przesuwa `TemperatureSlider`, co aktualizuje stan.
 - **Generowanie rekomendacji**: Użytkownik klika "Generate", co dezaktywuje formularz i uruchamia proces pobierania rekomendacji.
-- **Odtwarzanie podglądu**: Użytkownik klika "Play" na `AudioPlayer`, co uruchamia odtwarzanie i pauzuje inne podglądy.
+- **Przeglądanie metadanych**: Użytkownik przegląda informacje o utworze w `MetadataDisplay`.
 - **Dodawanie/blokowanie**: Użytkownik używa przycisków na `RecommendationCard` do zarządzania rekomendacjami, co wywołuje odpowiednie API i aktualizuje UI.
 - **Wyświetlanie szczegółów**: Użytkownik klika "Details", co otwiera modal z `ai_reasoning` i `artist_bio`.
 
@@ -199,7 +199,7 @@ Widok będzie komunikował się z czterema głównymi endpointami:
 - **Pusta biblioteka**: Otwierany jest modal `EmptyLibraryModal`, który prowadzi użytkownika przez proces dodania pierwszego utworu.
 - **Błąd generowania rekomendacji**: W miejscu listy rekomendacji wyświetlany jest komponent błędu zawierający informację o problemie i przycisk "Spróbuj ponownie". Formularz zostaje ponownie włączony.
 - **Błąd dodawania/blokowania utworu**: Wyświetlany jest `Toast` z informacją o błędzie, a UI karty wraca do stanu `idle`.
-- **Błąd odtwarzania audio**: `AudioPlayer` wyświetla ikonę błędu zamiast przycisku "Play".
+- **Błąd ładowania metadanych**: `MetadataDisplay` wyświetla informację o błędzie.
 
 ## 11. Kroki implementacji
 
@@ -211,7 +211,7 @@ Widok będzie komunikował się z czterema głównymi endpointami:
 6.  **Logika rekomendacji**: Implementacja wywołania `POST /api/spotify/recommendations` i obsługa stanu ładowania/błędu.
 7.  **Komponent `RecommendationsList`**: Stworzenie komponentu do wyświetlania listy rekomendacji, w tym stanów zastępczych (ładowanie, pusty, błąd) z użyciem `Skeleton` z Shadcn.
 8.  **Komponent `RecommendationCard`**: Implementacja karty dla pojedynczej rekomendacji, w tym jej stanów (`idle`, `adding`, `added` itd.).
-9.  **Globalny `AudioPlayer`**: Stworzenie hooka `useAudioPlayer` i `Context.Provider` w `DiscoverView` w celu zarządzania globalnym stanem odtwarzacza.
+9.  **Globalny State Management**: Stworzenie hooka `useGlobalState` i `Context.Provider` w `DiscoverView` w celu zarządzania globalnym stanem aplikacji.
 10. **Akcje na karcie**: Implementacja logiki dla przycisków "Add to Library" i "Block Track", włączając wywołania API i aktualizacje UI.
 11. **Modal szczegółów**: Stworzenie `RecommendationDetailsModal` do wyświetlania `ai_reasoning` i `artist_bio`.
 12. **Stylowanie i testowanie**: Dopracowanie stylów za pomocą Tailwind CSS, zapewnienie responsywności i przeprowadzenie testów manualnych całego przepływu.

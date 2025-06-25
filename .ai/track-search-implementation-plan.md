@@ -54,8 +54,8 @@ Endpoint **GET /api/spotify/search** służy do wyszukiwania utworów w katalogu
           }
         ]
       },
-      "duration_ms": 240000,
-      "preview_url": "https://..." // nullable
+      "duration_ms": 240000
+      // preview_url removed - no audio functionality
     }
   ],
   "total": 1000,

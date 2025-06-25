@@ -27,7 +27,6 @@ export interface SpotifyTrackItem {
   artists: SpotifyArtistItem[];
   album: SpotifyAlbumItem;
   duration_ms: number;
-  preview_url: string | null;
 }
 
 /**
@@ -76,7 +75,6 @@ export interface SpotifyTrackDetailsItem {
   artists: SpotifyArtistDetailsItem[];
   album: SpotifyAlbumDetailsItem;
   duration_ms: number;
-  preview_url: string | null;
   explicit: boolean;
   popularity: number;
 }
@@ -87,7 +85,7 @@ export interface SpotifyTrackDetailsItem {
 export interface SpotifyArtistDetailsItem {
   id: string;
   name: string;
-  genres: string[];
+  genres?: string[]; // Genres can be undefined for some artists
 }
 
 /**

@@ -1,0 +1,16 @@
+---
+import Layout from "../layouts/Layout.astro";
+import LibraryView from "../components/views/LibraryView.tsx";
+---
+
+<Layout title="Your Music Library">
+  <main>
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Your Music Library</h1>
+        <p class="text-gray-600">Your personal collection of metal tracks, curated by you.</p>
+      </div>
+      <LibraryView client:load />
+    </div>
+  </main>
+</Layout>

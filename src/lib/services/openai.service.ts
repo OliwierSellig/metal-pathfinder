@@ -54,7 +54,10 @@ export class OpenAIService {
               content: prompt,
             },
           ],
-          temperature: params.temperature,
+          // NOTE: We use a fixed low OpenAI temperature (0.3) for consistent, structured responses
+          // The musical "temperature" (popular vs niche) is handled in the prompt text, not here
+          // OpenAI temperature controls randomness of token generation, not music style preference
+          temperature: 0.3, // Fixed low temperature for consistent, structured responses
           max_tokens: 2000,
           response_format: { type: "json_object" },
         }),
@@ -94,8 +97,29 @@ export class OpenAIService {
       // Note: We can't directly filter by track ID since we don't have them yet
       // This filtering will be done later in the workflow after Spotify search
       const result: OpenAIRecommendationResponse = {
-        recommendations: parsedResponse.recommendations.slice(0, params.count),
+        recommendations: parsedResponse.recommendations, // Return all generated recommendations
       };
+
+      // DETAILED LOGGING: Log all AI generated recommendations before Spotify search
+      console.info("DETAILED: OpenAI generated recommendations", {
+        operation: "openai_generate_recommendations_detailed",
+        requested_count: params.count,
+        actual_generated_count: result.recommendations.length,
+        temperature: params.temperature,
+        base_track: {
+          name: params.base_track.name,
+          artists: params.base_track.artists,
+        },
+        user_description: params.description,
+        generated_recommendations: result.recommendations.map((rec, idx) => ({
+          index: idx,
+          song_title: rec.song_title,
+          artist_name: rec.artist_name,
+          reasoning: rec.reasoning,
+          confidence: rec.confidence,
+        })),
+        timestamp: new Date().toISOString(),
+      });
 
       console.info("OpenAI recommendations generated successfully", {
         operation: "openai_generate_recommendations",
@@ -212,22 +236,42 @@ export class OpenAIService {
       ? `Genres: ${params.base_track.genres.join(", ")}`
       : "Genres: Not specified";
 
+    // Build excluded tracks section
+    const excludedTracksInfo =
+      params.excluded_tracks.length > 0
+        ? `
+IMPORTANT - DO NOT RECOMMEND THESE TRACKS (user already has them or blocked them):
+${params.excluded_tracks.map((track) => `- ${track}`).join("\n")}
+
+Please ensure none of your recommendations match any of the tracks listed above.`
+        : "";
+
+    // Build temperature-specific instructions
+    const temperatureGuidance = this.getTemperatureGuidance(params.temperature);
+
     return `
 ${baseTrackInfo}
 ${genresInfo}
 
 User's preference description: "${params.description}"
+${excludedTracksInfo}
 
 Please recommend ${params.count} metal tracks similar to the base track that match the user's preferences. 
 
+TEMPERATURE SETTING: ${params.temperature}
+${temperatureGuidance}
+
 Requirements:
-1. Focus on metal subgenres and similar aggressive/atmospheric elements
-2. Use exact song titles and artist names (not Spotify IDs)
-3. Focus on well-known metal tracks that are likely to be found in Spotify
-4. Avoid obscure B-sides or demo tracks
-5. Include reasoning for each recommendation
-6. Provide confidence scores (0.0-1.0)
-7. Avoid mainstream tracks if temperature is high (${params.temperature})
+1. YOU MUST provide exactly ${params.count} recommendations - never fewer, never more
+2. Focus on metal subgenres and similar aggressive/atmospheric elements
+3. Use exact song titles and artist names (not Spotify IDs)
+4. Balance discoverability with the temperature guidance above
+5. Avoid extremely obscure B-sides or demo tracks that might not be on Spotify
+6. Include reasoning for each recommendation
+7. Provide confidence scores (0.0-1.0)
+8. If you struggle to find enough tracks matching the temperature level, use the fallback strategy above
+
+CRITICAL: The response array MUST contain exactly ${params.count} recommendation objects.
 
 Return a JSON object with this exact structure:
 {
@@ -252,11 +296,57 @@ Ensure all song titles and artist names are accurate and the tracks are availabl
   }
 
   /**
+   * Generates temperature-specific guidance for AI recommendations
+   * @private
+   */
+  private getTemperatureGuidance(temperature: number): string {
+    if (temperature <= 0.3) {
+      return `
+LOW TEMPERATURE (${temperature}) - Focus on POPULAR/MAINSTREAM recommendations:
+- Prioritize well-known, popular metal bands (Iron Maiden, Metallica, Black Sabbath, Judas Priest, etc.)
+- Include chart-topping songs and classic metal anthems
+- Focus on bands with millions of monthly listeners on Spotify
+- Prefer bands that regularly headline major festivals
+- These should be tracks most metal fans would recognize immediately
+
+CRITICAL: You MUST provide exactly the requested number of recommendations. Never return fewer tracks.`;
+    } else if (temperature <= 0.6) {
+      return `
+MEDIUM TEMPERATURE (${temperature}) - Balance POPULAR and LESSER-KNOWN recommendations:
+- Mix well-known bands (60%) with moderately popular ones (40%)
+- Include some deeper cuts from popular bands alongside their hits
+- Consider bands with 100k-1M monthly listeners on Spotify
+- Mix festival headliners with strong support acts
+- Balance recognizable names with quality discoveries
+
+CRITICAL: You MUST provide exactly the requested number of recommendations. Never return fewer tracks.`;
+    } else {
+      return `
+HIGH TEMPERATURE (${temperature}) - Prioritize NICHE/UNDERGROUND but ensure COMPLETENESS:
+- TARGET DISTRIBUTION: 70% lesser-known/underground + 30% moderately known bands if needed
+- PRIMARY FOCUS: Bands with under 500k monthly listeners (cult favorites, regional scenes, hidden gems)
+- SECONDARY FOCUS: If you can't find enough niche tracks, include moderately popular bands but avoid mega-mainstream ones
+- ACCEPTABLE: Deeper cuts from known bands, B-sides, or lesser-known albums from popular artists
+- AVOID ONLY: The most obvious mainstream hits (e.g., "Enter Sandman", "The Trooper", "Paranoid")
+
+FALLBACK STRATEGY: If struggling to find enough underground tracks, prioritize:
+1. Newer/emerging metal bands
+2. Regional metal scenes (European, South American, etc.)
+3. Underrated albums from moderately known bands
+4. Subgenre-specific cult classics
+
+CRITICAL: You MUST provide exactly the requested number of recommendations. Completeness is more important than perfect niche-ness.`;
+    }
+  }
+
+  /**
    * Builds the prompt for AI artist biography generation
    * @private
    */
   private buildArtistBioPrompt(params: OpenAIArtistBioParams): string {
-    const genresInfo = params.genres.length > 0 ? `Genres: ${params.genres.join(", ")}` : "";
+    // Safely handle undefined or empty genres array
+    const genres = params.genres || [];
+    const genresInfo = genres.length > 0 ? `Genres: ${genres.join(", ")}` : "";
 
     return `
 Write a concise 5-sentence biography for the metal artist "${params.artist_name}".

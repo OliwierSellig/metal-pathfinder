@@ -30,18 +30,18 @@ Aplikacja wykorzystuje wieloetapowy onboarding. Wszystkie widoki są zaprojektow
 
 - **Ścieżka**: `/discover`
 - **Główny cel**: Odkrywanie nowych utworów metalowych na podstawie preferencji użytkownika i AI
-- **Kluczowe informacje**: Lista utworów z biblioteki, pole opisu preferencji, suwak temperatury, rekomendacje AI z audio preview
+- **Kluczowe informacje**: Lista utworów z biblioteki, pole opisu preferencji, suwak temperatury, rekomendacje AI z metadanymi
 - **Kluczowe komponenty**:
   - Track selector (dropdown z utworami z biblioteki użytkownika)
   - Textarea dla opisu preferencji (min 30 znaków, real-time validation)
   - Temperature slider (0.1-1.0, kroki co 0.1, tooltips przy hover)
-  - Lista 10 rekomendacji z wbudowanym audio playerem
+  - Lista 10 rekomendacji z wyświetlaniem metadanych
   - Modal/expandable szczegółów rekomendacji (BIO zespołu + uzasadnienie AI)
   - Empty state z popup do dodania pierwszego utworu
   - Akcje: Dodaj do biblioteki, Blokuj utwór
 - **UX/Dostępność/Bezpieczeństwo**:
   - Keyboard navigation dla wszystkich kontrolek
-  - ARIA labels dla audio playerów
+  - ARIA labels dla elementów interaktywnych
   - Debounced interactions (300ms)
   - Graceful fallbacks dla błędów API
   - Auto-focus management w modalu
@@ -55,7 +55,7 @@ Aplikacja wykorzystuje wieloetapowy onboarding. Wszystkie widoki są zaprojektow
   - Minimalistyczne karty utworów (tytuł, artysta, album art, data dodania)
   - Search bar z submit button (tylko utwory z biblioteki)
   - Pagination controls (Previous/Next + wskaźniki pierwszej/ostatniej strony, 20 utworów na stronę)
-  - Wbudowany audio player w każdej karcie
+  - Przejrzyste wyświetlanie metadanych w każdej karcie
   - Modal potwierdzenia usunięcia (szczególnie dla ostatniego utworu)
   - Empty state z call-to-action
 - **UX/Dostępność/Bezpieczeństwo**:
@@ -95,7 +95,7 @@ Aplikacja wykorzystuje wieloetapowy onboarding. Wszystkie widoki są zaprojektow
 ### Cykliczny przepływ użytkowania:
 
 1. **Discover** → Generowanie rekomendacji AI na podstawie preferencji
-2. **Audio preview** → Odsłuchiwanie 30-sek fragmentów (jeden na raz)
+2. **Metadata display** → Prezentowanie informacji o utworach
 3. **Akcje na rekomendacjach**:
    - Dodaj do biblioteki → Optimistic update + sync z API
    - Blokuj utwór → Wybór czasu blokady (1d/7d/permanent)
@@ -108,7 +108,7 @@ Aplikacja wykorzystuje wieloetapowy onboarding. Wszystkie widoki są zaprojektow
 
 - **Error recovery** → Graceful fallbacks, retry mechanisms, user-friendly error messages
 - **Navigation** → Astro page transitions z preserved state w React islands
-- **Audio management** → Global state w React islands zapewniający jeden odtwarzacz na raz
+- **State management** → Global state w React islands dla zarządzania komponentami
 
 ## 4. Układ i struktura nawigacji
 
@@ -149,7 +149,7 @@ Aplikacja wykorzystuje wieloetapowy onboarding. Wszystkie widoki są zaprojektow
 
 ## 5. Kluczowe komponenty
 
-### Global Audio Player (`useAudioPlayer`)
+### Global State Management
 
 - **Funkcjonalność**: Globalny state management zapewniający odtwarzanie tylko jednego utworu jednocześnie
 - **Features**: Play/pause, progress bar, auto-stop przy zmianie widoku/modal close
@@ -167,7 +167,7 @@ Aplikacja wykorzystuje wieloetapowy onboarding. Wszystkie widoki są zaprojektow
 
 - **Użycie**: Uniwersalny komponent dla wszystkich list utworów
 - **Variants**: Library card (z delete action), Recommendation card (z add/block actions), Blocked card (z unblock action)
-- **Features**: Audio player, metadata display, responsive layout
+- **Features**: Metadata display, responsive layout, interaction handling
 - **Accessibility**: Semantic structure, keyboard interactions
 
 ### Pagination Component (`Pagination`)

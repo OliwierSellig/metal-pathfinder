@@ -33,9 +33,9 @@ export const GET: APIRoute = async ({ request, locals }) => {
     // Extract and validate query parameters
     const url = new URL(request.url);
     const rawParams = {
-      active_only: url.searchParams.get("active_only"),
-      limit: url.searchParams.get("limit"),
-      offset: url.searchParams.get("offset"),
+      active_only: url.searchParams.get("active_only") || undefined,
+      limit: url.searchParams.get("limit") || undefined,
+      offset: url.searchParams.get("offset") || undefined,
     };
 
     // Validate query parameters using Zod schema

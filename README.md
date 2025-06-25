@@ -1,6 +1,6 @@
 # MetalPathfinder
 
-A web-based MVP that enables metal music enthusiasts to discover new tracks by describing what they appreciate in a selected piece from their library. The system integrates with Spotify for authentication and audio previews, and utilizes OpenAI API to generate personalized recommendations.
+A web-based MVP that enables metal music enthusiasts to discover new tracks by describing what they appreciate in a selected piece from their library. The system integrates with Spotify for music metadata, and utilizes OpenAI API to generate personalized recommendations.
 
 ## Table of Contents
 
@@ -20,18 +20,16 @@ MetalPathfinder is an educational project that addresses the challenge metal mus
 - **Describe musical preferences** in natural language for selected tracks
 - **Receive AI-powered recommendations** with explanations and artist biographies
 - **Control recommendation style** via a popularity slider (Popular ↔ Niche)
-- **Preview 30-second audio clips** directly in the app
 - **Manage their music library** by adding/removing tracks
 - **Block unwanted recommendations** for specified time periods
 
 ### Key Features
 
 - Responsive design (320px+ viewport support)
-- Integration with Spotify Web API for music data and previews
+- Integration with Spotify Web API for music data and metadata
 - AI-powered music recommendations via OpenAI API
 - Personal music library management
 - Smart content filtering and blocking system
-- Real-time audio preview player
 
 ## Tech Stack
 
@@ -134,7 +132,7 @@ MetalPathfinder is an educational project that addresses the challenge metal mus
 - Spotify OAuth authentication and user onboarding
 - Music library management (add, remove, view tracks)
 - AI-powered music discovery with natural language descriptions
-- Audio preview integration (30-second clips)
+- Advanced music metadata display
 - Recommendation blocking system (1 day, 7 days, forever)
 - Responsive UI design (320px to desktop)
 - Artist biography generation
@@ -151,7 +149,7 @@ MetalPathfinder is an educational project that addresses the challenge metal mus
 - Social features (sharing, friends, comments)
 - Advanced analytics and ML on listening history
 - Multiple streaming service integrations
-- Full track playback within the app
+- Audio playback or preview functionality
 - Premium features (playlist export, advanced filtering)
 - Offline mode and local file synchronization
 - Complex genre filtering and statistics

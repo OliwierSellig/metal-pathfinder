@@ -116,13 +116,27 @@ export const POST: APIRoute = async ({ request, locals }) => {
       blockedTracksService.getActiveBlockedTracks(TEST_USER_ID),
     ]);
 
-    // Combine exclusion lists
+    // Combine exclusion lists - track IDs
     const excludedTrackIds = [
       ...libraryTracks.tracks.map((track) => track.spotify_track_id),
       ...blockedTracks.blocked_tracks.map((track) => track.spotify_track_id),
     ];
 
-    // Step 4: Prepare parameters for AI generation
+    // Step 4: Get track names for excluded tracks to inform AI
+    const excludedTrackNames: string[] = [];
+    if (excludedTrackIds.length > 0) {
+      try {
+        const excludedTrackDetails = await spotifyService.getMultipleTrackDetails(excludedTrackIds);
+        excludedTrackNames.push(
+          ...excludedTrackDetails.map((track) => `"${track.name}" by ${track.artists.map((a) => a.name).join(", ")}`)
+        );
+      } catch (error) {
+        console.warn("Failed to get excluded track names, proceeding without them:", error);
+        // Continue without excluded track names - AI won't know about them but we'll filter later
+      }
+    }
+
+    // Step 5: Prepare parameters for AI generation
     const openAIParams: OpenAIRecommendationParams = {
       base_track: {
         name: baseTrackDetails.name,
@@ -132,23 +146,74 @@ export const POST: APIRoute = async ({ request, locals }) => {
       description: description.trim(),
       temperature,
       count: count * 2, // Request more to account for filtering
-      excluded_track_ids: excludedTrackIds,
+      excluded_tracks: excludedTrackNames,
     };
 
-    // Step 5: Generate AI recommendations (song/artist pairs)
+    // Step 6: Generate AI recommendations (song/artist pairs)
     const aiRecommendations = await openAIService.generateRecommendations(openAIParams);
 
-    // Step 6: Search for track IDs using Spotify Search
+    // Log AI generation results
+    console.info("AI recommendations generated", {
+      operation: "ai_recommendations_generation",
+      user_id: TEST_USER_ID,
+      requested_count: count,
+      ai_multiplier_count: count * 2,
+      ai_generated_count: aiRecommendations.recommendations.length,
+      excluded_tracks_count: excludedTrackIds.length,
+      excluded_track_names_provided: excludedTrackNames.length,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Step 7: Search for track IDs using Spotify Search
     const trackSearchResults = await Promise.all(
       aiRecommendations.recommendations.map((rec) =>
         spotifyService.searchTrackByNameAndArtist(rec.song_title, rec.artist_name)
       )
     );
 
-    // Step 7: Filter out not found tracks
+    // DETAILED LOGGING: Log each AI recommendation and its Spotify search result
+    console.info("DETAILED: AI recommendations with Spotify search results", {
+      operation: "ai_recommendations_detailed_search",
+      user_id: TEST_USER_ID,
+      ai_recommendations: aiRecommendations.recommendations.map((rec, idx) => ({
+        index: idx,
+        ai_song_title: rec.song_title,
+        ai_artist_name: rec.artist_name,
+        ai_reasoning: rec.reasoning,
+        ai_confidence: rec.confidence,
+        spotify_found: trackSearchResults[idx]?.found || false,
+        spotify_track_id: trackSearchResults[idx]?.spotify_track_id || null,
+        spotify_actual_song: trackSearchResults[idx]?.actual_song_title || null,
+        spotify_actual_artist: trackSearchResults[idx]?.actual_artist_name || null,
+      })),
+      timestamp: new Date().toISOString(),
+    });
+
+    // Step 8: Filter out not found tracks and excluded tracks
     const foundTrackIds = trackSearchResults
       .filter((result) => result.found && result.spotify_track_id !== null)
-      .map((result) => result.spotify_track_id as string);
+      .map((result) => result.spotify_track_id as string)
+      // Additional server-side filtering to ensure excluded tracks are not included
+      .filter((trackId) => !excludedTrackIds.includes(trackId));
+
+    // DETAILED LOGGING: Show exactly which tracks were filtered out
+    console.info("DETAILED: Track filtering results", {
+      operation: "ai_recommendations_detailed_filtering",
+      user_id: TEST_USER_ID,
+      total_ai_recommendations: aiRecommendations.recommendations.length,
+      found_in_spotify: foundTrackIds.length,
+      filtered_out_count: aiRecommendations.recommendations.length - foundTrackIds.length,
+      found_track_ids: foundTrackIds,
+      filtered_out_tracks: trackSearchResults
+        .filter((result) => !result.found || result.spotify_track_id === null)
+        .map((result) => ({
+          song_title: result.song_title,
+          artist_name: result.artist_name,
+          found: result.found,
+          spotify_track_id: result.spotify_track_id,
+        })),
+      timestamp: new Date().toISOString(),
+    });
 
     // Check if we found enough tracks
     if (foundTrackIds.length === 0) {
@@ -193,10 +258,20 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
-    // Step 8: Get detailed track info (batch)
+    // Step 9: Get detailed track info (batch)
     const recommendedTrackDetails = await spotifyService.getMultipleTrackDetails(foundTrackIds);
 
-    // Step 7: Generate artist biographies in parallel
+    // Log track details retrieval
+    console.info("Track details retrieved", {
+      operation: "ai_recommendations_track_details",
+      user_id: TEST_USER_ID,
+      requested_track_ids: foundTrackIds.length,
+      retrieved_track_details: recommendedTrackDetails.length,
+      final_count_limit: count,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Step 10: Generate artist biographies in parallel
     const bioPromises = recommendedTrackDetails.map(async (track) => {
       const primaryArtist = track.artists[0];
       if (!primaryArtist) return "Artist biography not available.";
@@ -204,7 +279,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       try {
         const bioResponse = await openAIService.generateArtistBio({
           artist_name: primaryArtist.name,
-          genres: primaryArtist.genres,
+          genres: primaryArtist.genres || [], // Ensure genres is always an array
           focus_area: "metal_music",
         });
         return bioResponse.biography;
@@ -216,7 +291,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const artistBios = await Promise.all(bioPromises);
 
-    // Step 9: Transform to final DTO format with proper AI data mapping
+    // Step 11: Transform to final DTO format with proper AI data mapping
     const recommendations: AIRecommendationDTO[] = recommendedTrackDetails
       .slice(0, count) // Limit to requested count
       .map((track, index) => {
@@ -245,13 +320,31 @@ export const POST: APIRoute = async ({ request, locals }) => {
             images: track.album.images,
           },
           duration_ms: track.duration_ms,
-          preview_url: track.preview_url,
           ai_reasoning: matchingAIRec?.reasoning || "No reasoning provided",
           artist_bio: artistBios[index] || "Artist biography not available.",
           popularity_score: track.popularity,
           recommendation_confidence: matchingAIRec?.confidence || 0.5,
         };
       });
+
+    // DETAILED LOGGING: Log final recommendations being sent to user
+    console.info("DETAILED: Final recommendations mapping", {
+      operation: "ai_recommendations_final_mapping",
+      user_id: TEST_USER_ID,
+      requested_count: count,
+      track_details_available: recommendedTrackDetails.length,
+      final_recommendations_count: recommendations.length,
+      recommendations_slice_used: `slice(0, ${count})`,
+      final_recommendations: recommendations.map((rec, idx) => ({
+        index: idx,
+        spotify_track_id: rec.spotify_track_id,
+        name: rec.name,
+        artists: rec.artists.map((a) => a.name),
+        ai_reasoning: rec.ai_reasoning.substring(0, 50) + "...",
+        recommendation_confidence: rec.recommendation_confidence,
+      })),
+      timestamp: new Date().toISOString(),
+    });
 
     // Prepare base track info
     const baseTrack: BaseTrackInfoDTO = {

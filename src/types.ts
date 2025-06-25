@@ -212,8 +212,6 @@ export interface SpotifyTrackBase extends SpotifyBaseEntity {
   artists: SpotifyArtistSearchDTO[];
   album: SpotifyAlbumSearchDTO;
   duration_ms: number;
-  /** Optional preview URL for 30-second clip */
-  preview_url: string | null;
 }
 
 /** Individual track in search results */
@@ -256,7 +254,7 @@ export interface SpotifyAlbumDetailsDTO extends SpotifyAlbumSearchDTO {
 
 /** Response DTO for GET /api/spotify/track/{spotify_track_id} */
 export interface TrackDetailsResponseDTO extends SpotifyTrackBase {
-  // Inherits: spotify_track_id, name, duration_ms, preview_url from SpotifyTrackBase
+  // Inherits: spotify_track_id, name, duration_ms from SpotifyTrackBase
   // Override with more detailed types:
   artists: SpotifyArtistDetailsDTO[];
   album: SpotifyAlbumDetailsDTO;
@@ -284,7 +282,7 @@ export interface AIRecommendationsCommand {
 
 /** Individual AI recommendation with reasoning and metadata */
 export interface AIRecommendationDTO extends SpotifyTrackBase {
-  // Inherits: spotify_track_id, name, artists, album, duration_ms, preview_url
+  // Inherits: spotify_track_id, name, artists, album, duration_ms
   /** AI-generated reasoning for this recommendation */
   ai_reasoning: string;
   /** AI-generated artist biography focusing on metal music contribution */
@@ -327,10 +325,13 @@ export interface AIRecommendationsResponseDTO {
 }
 
 // =============================================================================
-// OPENAI INTEGRATION DTOs
+// OPENAI INTEGRATION TYPES
 // =============================================================================
 
-/** Individual track recommendation from AI with song/artist info */
+/**
+ * Individual track recommendation from OpenAI
+ * Used internally before enrichment with Spotify data
+ */
 export interface AITrackRecommendation {
   /** Song title as recommended by AI */
   song_title: string;
@@ -342,7 +343,10 @@ export interface AITrackRecommendation {
   confidence: number;
 }
 
-/** Result of searching for a track by name and artist in Spotify */
+/**
+ * Result of searching for an AI-recommended track in Spotify
+ * Used to track which recommendations were successfully found
+ */
 export interface TrackSearchResult {
   /** Spotify track ID if found, null if not found */
   spotify_track_id: string | null;
@@ -358,13 +362,13 @@ export interface TrackSearchResult {
   actual_artist_name?: string;
 }
 
-/** OpenAI API response structure for track recommendations */
+/** OpenAI API response for track recommendations */
 export interface OpenAIRecommendationResponse {
   /** Array of track recommendations with song/artist info */
   recommendations: AITrackRecommendation[];
 }
 
-/** Parameters for OpenAI recommendation generation */
+/** Parameters for OpenAI track recommendation request */
 export interface OpenAIRecommendationParams {
   /** Base track metadata for context */
   base_track: {
@@ -378,8 +382,8 @@ export interface OpenAIRecommendationParams {
   temperature: number;
   /** Number of recommendations to generate */
   count: number;
-  /** Track IDs to exclude from recommendations */
-  excluded_track_ids: string[];
+  /** Track names to exclude from recommendations (for AI to understand) */
+  excluded_tracks: string[];
 }
 
 /** OpenAI API response for artist biography generation */
@@ -388,12 +392,92 @@ export interface OpenAIArtistBioResponse {
   biography: string;
 }
 
-/** Parameters for OpenAI artist biography generation */
+/** Parameters for OpenAI artist biography request */
 export interface OpenAIArtistBioParams {
   /** Artist name */
   artist_name: string;
-  /** Artist genres for context */
+  /** Artist genres for context - can be empty if no genre info available */
   genres: string[];
   /** Focus on metal music contribution */
   focus_area: "metal_music";
+}
+
+// =============================================================================
+// TRACK SELECTOR TYPES (Frontend Component Types)
+// =============================================================================
+
+/** Extended track info for track selector component with Spotify details */
+export interface LibraryTrackWithDetailsDTO extends LibraryTrackDTO {
+  /** Track name from Spotify */
+  name: string;
+  /** Artist names */
+  artists: Pick<SpotifyArtistSearchDTO, "name">[];
+  /** Album info with cover art */
+  album: Pick<SpotifyAlbumSearchDTO, "name" | "images">;
+  /** Track duration in milliseconds */
+  duration_ms: number;
+}
+
+// =============================================================================
+// LIBRARY VIEW TYPES (Frontend Component Types)
+// =============================================================================
+
+/** UI states for library track operations */
+export type LibraryTrackUIState = "idle" | "deleting";
+
+/** Model widoku dla pojedynczego utworu w bibliotece, łączący dane z wielu źródeł */
+export interface LibraryTrackViewModel extends LibraryTrackWithDetailsDTO {
+  // Dziedziczy: spotify_track_id, created_at, name, artists, album, duration_ms
+  /** Stan UI dla obsługi optymistycznych aktualizacji */
+  uiState: LibraryTrackUIState;
+}
+
+/** Metadane paginacji potrzebne dla komponentu PaginationControls */
+export interface PaginationMeta {
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  limit: number;
+  hasMore: boolean;
+  // Kompatybilność z PaginationMeta z types.ts
+  total_count: number;
+  offset: number;
+}
+
+/** Główny stan widoku Library, zarządzany przez hook useLibraryView */
+export interface LibraryViewState {
+  tracks: LibraryTrackViewModel[];
+  pagination: PaginationMeta;
+  isLoading: boolean;
+  error: Error | null;
+  /** Przechowuje utwór wybrany do usunięcia, kontroluje widoczność modala */
+  trackToDelete: LibraryTrackViewModel | null;
+}
+
+// =============================================================================
+// BLOCKED TRACKS VIEW TYPES (Frontend Component Types)
+// =============================================================================
+
+/** UI states for blocked track operations */
+export type BlockedTrackUIState = "idle" | "deleting";
+
+/** Model widoku dla pojedynczego zablokowanego utworu, łączący dane z wielu źródeł */
+export interface BlockedTrackViewModel extends TrackDetailsResponseDTO {
+  // Dziedziczy wszystkie szczegóły utworu ze Spotify:
+  // spotify_track_id, name, artists, album, duration_ms, explicit, popularity
+
+  /** Informacje o blokadzie z naszego API */
+  block_info: Pick<BlockedTrackDTO, "expires_at" | "created_at">;
+
+  /** Stan UI do obsługi optymistycznych aktualizacji */
+  uiState: BlockedTrackUIState;
+}
+
+/** Główny stan widoku Blocked Tracks, zarządzany przez hook useBlockedTracksView */
+export interface BlockedTracksViewState {
+  tracks: BlockedTrackViewModel[];
+  isLoading: boolean;
+  error: Error | null;
+  /** Przechowuje utwór wybrany do odblokowania, kontroluje widoczność modala */
+  trackToUnblock: BlockedTrackViewModel | null;
 }

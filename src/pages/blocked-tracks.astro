@@ -1,0 +1,19 @@
+---
+import Layout from "../layouts/Layout.astro";
+import BlockedTracksView from "../components/views/BlockedTracksView.tsx";
+---
+
+<Layout title="Blocked Tracks">
+  <main>
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Blocked Tracks</h1>
+        <p class="text-gray-600">
+          Manage tracks you've excluded from AI recommendations. You can unblock them manually or wait for the timer to
+          expire.
+        </p>
+      </div>
+      <BlockedTracksView client:load />
+    </div>
+  </main>
+</Layout>

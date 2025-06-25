@@ -29,7 +29,7 @@ B. Moduł odkrywania
 • Pole tekstowe (min. 30 znaków) do opisu preferencji.
 • Suwak temperatury (Popularne ↔ Niszowe) przekazywany do AI.
 • Generowanie 10 rekomendacji spoza biblioteki.
-• Wyświetlanie uzasadnienia wyboru i 30-sek. podglądu ze Spotify.
+• Wyświetlanie uzasadnienia wyboru od AI.
 • Prezentacja 5-zdaniowego BIO zespołu dla każdej rekomendacji.
 
 C. Zarządzanie biblioteką i rekomendacjami
@@ -40,13 +40,13 @@ C. Zarządzanie biblioteką i rekomendacjami
 
 D. Interfejs użytkownika
 • Responsywny layout (320 px+).
-• Intuicyjny odtwarzacz fragmentów.
+• Przejrzyste prezentowanie metadanych utworów.
 • Jasna nawigacja między Onboarding, Odkrywanie, Biblioteka.
 • Placeholdery z przykładami opisów i stany loading.
 • Komunikaty błędów dla Spotify, AI i sieci.
 
 E. Warstwa techniczna
-• Integracja Spotify API (Client Credentials Flow dla search, audio previews, metadata).
+• Integracja Spotify API (Client Credentials Flow dla search i metadata).
 • Integracja OpenAI API (prompt-based recommendations).
 • Brak cachowania: każde zapytanie o rekomendacje jest świeże.
 • Baza danych online (SupaBase) dla bibliotek, blokad i preferencji użytkowników.
@@ -117,18 +117,9 @@ Kryteria akceptacji:
 
 1. AI zwraca dokładnie 10 pozycji.
 2. Żaden z utworów nie istnieje w bibliotece ani na liście blokad aktywnych.
-3. Dla każdego utworu prezentowane są: tytuł, wykonawca, podgląd audio, BIO, uzasadnienie.
+3. Dla każdego utworu prezentowane są: tytuł, wykonawca, BIO, uzasadnienie.
 
-### US-007 – Podgląd audio
-
-Opis: Jako użytkownik chcę odsłuchać 30-sek. fragment rekomendowanego utworu bez opuszczania aplikacji.
-Kryteria akceptacji:
-
-1. Player odtwarza preview przez Spotify Web API.
-2. Odtwarzanie można pauzować i wznawiać.
-3. Błąd odtwarzania pokazuje komunikat.
-
-### US-008 – Dodawanie do biblioteki
+### US-007 – Dodawanie do biblioteki
 
 Opis: Jako użytkownik chcę dodać rekomendowany utwór do mojej biblioteki jednym kliknięciem, aby zapisać go na przyszłość.
 Kryteria akceptacji:
@@ -137,7 +128,7 @@ Kryteria akceptacji:
 2. Utwór znika z listy rekomendacji lub oznacza się jako dodany.
 3. Operacja potwierdzona toastem.
 
-### US-009 – Blokowanie utworu
+### US-008 – Blokowanie utworu
 
 Opis: Jako użytkownik chcę zablokować utwór na 1 dzień, 7 dni lub na zawsze, aby nie był ponownie polecany.
 Kryteria akceptacji:
@@ -146,7 +137,7 @@ Kryteria akceptacji:
 2. Zablokowany utwór jest natychmiast usuwany z listy.
 3. Blokada wygasa automatycznie po czasie (o ile nie na zawsze).
 
-### US-010 – Przegląd biblioteki
+### US-009 – Przegląd biblioteki
 
 Opis: Jako użytkownik chcę przeglądać moją bibliotekę w formie listy, aby zarządzać zapisanymi utworami.
 Kryteria akceptacji:
@@ -155,7 +146,7 @@ Kryteria akceptacji:
 2. Lista ładuje się z bazy po wejściu.
 3. Brak utworów wyświetla stan pusty.
 
-### US-011 – Wyświetlanie BIO zespołu
+### US-010 – Wyświetlanie BIO zespołu
 
 Opis: Jako użytkownik chcę zobaczyć krótkie (max 5 zdań) BIO zespołu dla rekomendowanego utworu, aby lepiej poznać artystę.
 Kryteria akceptacji:
@@ -163,7 +154,7 @@ Kryteria akceptacji:
 1. BIO generowane jest przez AI na żądanie.
 2. Treść nie przekracza 5 zdań.
 
-### US-012 – Uzasadnienie rekomendacji
+### US-011 – Uzasadnienie rekomendacji
 
 Opis: Jako użytkownik chcę wiedzieć, dlaczego dany utwór został polecony, aby zrozumieć logikę AI.
 Kryteria akceptacji:
@@ -171,7 +162,7 @@ Kryteria akceptacji:
 1. AI zwraca krótkie wytłumaczenie (1–2 zdania) dla każdego utworu.
 2. Uzasadnienie jest wyświetlane pod nazwą utworu.
 
-### US-013 – Responsywny interfejs
+### US-012 – Responsywny interfejs
 
 Opis: Jako użytkownik mobilny chcę korzystać z aplikacji na ekranie 320 px, aby wygodnie odkrywać muzykę na telefonie.
 Kryteria akceptacji:
@@ -179,7 +170,7 @@ Kryteria akceptacji:
 1. Layout nie wymaga poziomego scrolla na 320 px.
 2. Wszystkie elementy są dostępne dotykowo.
 
-### US-014 – Obsługa błędów API
+### US-013 – Obsługa błędów API
 
 Opis: Jako użytkownik chcę otrzymywać przyjazne komunikaty, gdy Spotify lub OpenAI API jest niedostępne, aby wiedzieć, co się stało.
 Kryteria akceptacji:
@@ -187,7 +178,7 @@ Kryteria akceptacji:
 1. Błędy 4xx/5xx Spotify lub OpenAI API wyświetlają dedykowany stan błędu.
 2. Użytkownik może ponowić próbę.
 
-### US-015 – Bezpieczne przechowywanie sesji
+### US-014 – Bezpieczne przechowywanie sesji
 
 Opis: Jako użytkownik chcę, aby moja sesja była bezpiecznie przechowywana i odświeżana, abym nie musiał logować się zbyt często.
 Kryteria akceptacji:
@@ -196,7 +187,7 @@ Kryteria akceptacji:
 2. Token sesji odnawia dostęp automatycznie.
 3. Wylogowanie usuwa dane sesji lokalnie i w SupaBase.
 
-### US-016 – Usuwanie utworu z biblioteki
+### US-015 – Usuwanie utworu z biblioteki
 
 Opis: Jako użytkownik chcę móc usunąć utwór z mojej biblioteki, aby mógł on ponownie pojawić się w rekomendacjach, przy czym nie mogę usunąć ostatniego pozostałego utworu.
 Kryteria akceptacji:

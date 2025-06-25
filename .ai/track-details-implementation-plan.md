@@ -50,7 +50,7 @@ Endpoint **GET /api/spotify/track/{spotify_track_id}** służy do pobierania szc
     ]
   },
   "duration_ms": 240000,
-  "preview_url": "https://...", // nullable
+  // preview_url removed - no audio functionality
   "explicit": false,
   "popularity": 65
 }

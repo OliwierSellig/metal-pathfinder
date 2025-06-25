@@ -1,8 +1,8 @@
-import React from "react";
+import * as React from "react";
 import { Skeleton } from "../ui/skeleton";
 import { Button } from "../ui/button";
-import RecommendationCard, { type RecommendationCardViewModel } from "./RecommendationCard.tsx";
-import type { AIRecommendationDTO, GenerationMetadataDTO } from "../../types";
+import RecommendationCard, { type RecommendationCardViewModel } from "./RecommendationCard";
+import type { GenerationMetadataDTO, BlockDuration } from "../../types";
 
 interface RecommendationsListProps {
   recommendations: RecommendationCardViewModel[];
@@ -10,9 +10,8 @@ interface RecommendationsListProps {
   error: Error | null;
   metadata: GenerationMetadataDTO | null;
   onAddToLibrary: (trackId: string) => void;
-  onBlockTrack: (trackId: string) => void;
-  onViewDetails: (track: AIRecommendationDTO) => void;
-  onPlayPreview?: (previewUrl: string) => void;
+  onBlockTrack: (trackId: string, duration: BlockDuration) => void;
+  onViewDetails: (track: RecommendationCardViewModel) => void;
   onClearError: () => void;
 }
 
@@ -24,7 +23,6 @@ const RecommendationsList: React.FC<RecommendationsListProps> = ({
   onAddToLibrary,
   onBlockTrack,
   onViewDetails,
-  onPlayPreview,
   onClearError,
 }) => {
   // Loading State with Skeletons
@@ -152,7 +150,6 @@ const RecommendationsList: React.FC<RecommendationsListProps> = ({
               onAddToLibrary={onAddToLibrary}
               onBlockTrack={onBlockTrack}
               onViewDetails={onViewDetails}
-              onPlayPreview={onPlayPreview}
             />
           </div>
         ))}
