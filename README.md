@@ -54,9 +54,17 @@ MetalPathfinder is an educational project that addresses the challenge metal mus
 - **OpenAI API** - Direct integration with OpenAI's language models
 - Advanced prompt engineering for music recommendations
 
+### Testing
+
+- **Vitest** - Fast unit testing framework compatible with Vite
+- **React Testing Library** - Testing React components with user-centric approach
+- **Playwright** - End-to-end and cross-browser testing
+- **MSW (Mock Service Worker)** - API mocking for development and testing
+- **Lighthouse CI** - Performance and accessibility monitoring
+
 ### Development & Deployment
 
-- **GitHub Actions** - CI/CD pipeline
+- **GitHub Actions** - CI/CD pipeline with automated testing
 - **DigitalOcean** - Cloud hosting with Docker containers
 - **ESLint & Prettier** - Code quality and formatting
 - **Husky** - Git hooks for pre-commit validation
@@ -95,7 +103,6 @@ MetalPathfinder is an educational project that addresses the challenge metal mus
    ```
 
    Configure the following variables:
-
    - `SPOTIFY_CLIENT_ID`
    - `SPOTIFY_CLIENT_SECRET`
    - `OPENAI_API_KEY`

@@ -35,3 +35,15 @@ CI/CD i Hosting:
 Manager paczek
 
 - Do zarządzania paczkami w Node uzywamy wyłącznie Bun
+
+Testing - Kompleksowe pokrycie testowe dla zapewnienia jakości:
+
+- Vitest jako główny framework do testów jednostkowych - szybki i kompatybilny z Vite
+- React Testing Library do testowania komponentów React z perspektywy użytkownika
+- Playwright do testów end-to-end i cross-browser testing (Chrome, Firefox, Safari, Edge)
+- MSW (Mock Service Worker) do mockowania API calls w testach
+- Supertest do testowania API endpoints
+- Docker Compose dla izolowanych środowisk testowych z bazą danych
+- GitHub Actions do automatyzacji testów w pipeline CI/CD
+- Lighthouse CI do monitorowania wydajności i dostępności
+- @axe-core/playwright do testowania accessibility i zgodności z WCAG 2.1

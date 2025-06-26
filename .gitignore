@@ -22,3 +22,13 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# test artifacts
+coverage/
+test-results/
+playwright-report/
+test-results-*/
+.nyc_output/
+
+# vitest
+vitest.config.ts.timestamp*
