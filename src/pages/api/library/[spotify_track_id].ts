@@ -2,7 +2,7 @@ import type { APIContext } from "astro";
 import type { SuccessMessageDTO, SpotifyTrackId } from "../../../types";
 import { LibraryService } from "../../../lib/services/library.service";
 import { validateSpotifyTrackId } from "../../../lib/utils/validation";
-import { TEST_USER_ID } from "../../../db/supabase.server";
+import { getAuthenticatedUserId } from "../../../lib/utils/auth";
 import {
   LastTrackError,
   TrackNotFoundError,
@@ -23,8 +23,8 @@ export const prerender = false;
  */
 export async function DELETE(context: APIContext): Promise<Response> {
   try {
-    // Use test user ID for development (no authentication required yet)
-    const userId = TEST_USER_ID;
+    // Get authenticated user ID from locals
+    const userId = getAuthenticatedUserId(context.locals);
 
     // Extract spotify_track_id from URL params
     const { spotify_track_id } = context.params;

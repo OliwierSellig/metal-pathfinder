@@ -78,8 +78,8 @@ const RegisterForm: React.FC = () => {
       });
 
       if (response.ok) {
-        toast.success("Account created successfully! Please log in.");
-        window.location.href = "/login";
+        toast.success("Account created successfully! Welcome to MetalPathfinder.");
+        window.location.href = "/discover";
       } else {
         const error = await response.json();
         if (response.status === 409) {

@@ -6,7 +6,7 @@ import {
   formatZodErrors,
 } from "../../../../lib/utils/validation";
 import { createErrorResponse, logError, ValidationError, SpotifyAPIError } from "../../../../lib/utils/errors";
-import { TEST_USER_ID } from "../../../../db/supabase.server";
+import { getAuthenticatedUserId } from "../../../../lib/utils/auth";
 
 // Disable prerendering for API routes
 export const prerender = false;
@@ -15,8 +15,11 @@ export const prerender = false;
  * GET /api/spotify/track/{spotify_track_id}
  * Gets detailed information about a specific Spotify track
  */
-export const GET: APIRoute = async ({ params, url }) => {
+export const GET: APIRoute = async ({ params, url, locals }) => {
   const spotifyService = new SpotifyService();
+
+  // Get authenticated user ID from locals
+  const userId = getAuthenticatedUserId(locals);
 
   try {
     // Validate path parameters
@@ -28,7 +31,7 @@ export const GET: APIRoute = async ({ params, url }) => {
       logError(new ValidationError("Path parameter validation failed", validationErrors), {
         operation: "validate_track_details_path",
         raw_params: params,
-        user_id: TEST_USER_ID,
+        user_id: userId,
       });
 
       return new Response(
@@ -65,7 +68,7 @@ export const GET: APIRoute = async ({ params, url }) => {
       logError(new ValidationError("Query parameter validation failed", validationErrors), {
         operation: "validate_track_details_query",
         raw_params: rawQueryParams,
-        user_id: TEST_USER_ID,
+        user_id: userId,
       });
 
       return new Response(
@@ -90,7 +93,7 @@ export const GET: APIRoute = async ({ params, url }) => {
     // Log successful operation
     console.info("Track details retrieved successfully", {
       operation: "track_details_endpoint",
-      user_id: TEST_USER_ID,
+      user_id: userId,
       spotify_track_id,
       market: validatedQueryParams.market || "US",
       track_name: trackDetails.name,
@@ -106,7 +109,7 @@ export const GET: APIRoute = async ({ params, url }) => {
     if (error instanceof SpotifyAPIError) {
       logError(error, {
         operation: "track_details_endpoint",
-        user_id: TEST_USER_ID,
+        user_id: userId,
         spotify_track_id: params?.spotify_track_id,
         url: url.toString(),
       });
@@ -152,7 +155,7 @@ export const GET: APIRoute = async ({ params, url }) => {
     // Handle unexpected errors
     logError(new Error("Unexpected error in track details endpoint", { cause: error }), {
       operation: "track_details_endpoint",
-      user_id: TEST_USER_ID,
+      user_id: userId,
       spotify_track_id: params?.spotify_track_id,
       url: url.toString(),
     });

@@ -3,7 +3,7 @@ import type { BlockTrackCommand } from "../../../types";
 import { BlockedTracksService } from "../../../lib/services/blocked-tracks.service";
 import { blockedTracksQueryParamsSchema, blockTrackCommandSchema } from "../../../lib/utils/validation";
 import { formatZodErrors } from "../../../lib/utils/validation";
-import { TEST_USER_ID } from "../../../db/supabase.server";
+import { getAuthenticatedUserId } from "../../../lib/utils/auth";
 import {
   DatabaseError,
   DuplicateTrackError,
@@ -27,8 +27,8 @@ export const prerender = false;
  */
 export const GET: APIRoute = async ({ request, locals }) => {
   try {
-    // Use test user ID for development (no authentication required yet)
-    const userId = TEST_USER_ID;
+    // Get authenticated user ID from locals
+    const userId = getAuthenticatedUserId(locals);
 
     // Extract and validate query parameters
     const url = new URL(request.url);
@@ -120,8 +120,8 @@ export const GET: APIRoute = async ({ request, locals }) => {
  */
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    // Use test user ID for development (no authentication required yet)
-    const userId = TEST_USER_ID;
+    // Get authenticated user ID from locals
+    const userId = getAuthenticatedUserId(locals);
 
     // Check Content-Type header
     const contentType = request.headers.get("content-type")?.toLowerCase();

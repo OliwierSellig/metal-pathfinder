@@ -14,6 +14,7 @@ const PUBLIC_PATHS = [
   "/api/auth/logout",
   "/api/auth/forgot-password",
   "/api/auth/update-password",
+  "/api/auth/callback",
   // Static assets and other public paths
   "/favicon.png",
 ];

@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
-import { createSupabaseServerInstance } from "../../../db/supabase.server.ts";
-import { AuthService } from "../../../lib/services/auth.service.ts";
+import { createSupabaseServerInstance } from "../../../db/supabase.server";
+import { AuthService } from "../../../lib/services/auth.service";
 import { AuthenticationError, DatabaseError, createErrorResponse, logError } from "../../../lib/utils/errors";
 
 // Disable prerendering for this API route

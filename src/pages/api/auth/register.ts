@@ -9,14 +9,14 @@ import {
   createValidationErrorResponse,
   logError,
 } from "../../../lib/utils/errors";
-import { loginRequestSchema, formatZodErrors } from "../../../lib/utils/validation";
+import { registerRequestSchema, formatZodErrors } from "../../../lib/utils/validation";
 
 // Disable prerendering for this API route
 export const prerender = false;
 
 /**
- * POST /api/auth/login
- * Logs in a user with email and password
+ * POST /api/auth/register
+ * Registers a new user with email and password
  */
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -37,13 +37,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Validate request body structure with Zod
-    const validationResult = loginRequestSchema.safeParse(requestBody);
+    const validationResult = registerRequestSchema.safeParse(requestBody);
 
     if (!validationResult.success) {
       const validationErrors = formatZodErrors(validationResult.error);
 
-      logError(new ValidationError("Login request validation failed", validationErrors), {
-        operation: "validate_login_request",
+      logError(new ValidationError("Register request validation failed", validationErrors), {
+        operation: "validate_register_request",
         request_body: requestBody,
       });
 
@@ -62,19 +62,28 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
     const authService = new AuthService(supabase);
 
-    // Attempt to sign in user using AuthService
-    const loginResult = await authService.loginUser(email, password);
+    // Attempt to register user using AuthService
+    const registerResult = await authService.registerUser(email, password);
 
-    // Return success response
-    return new Response(JSON.stringify(loginResult), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    // Return success response with user data
+    return new Response(
+      JSON.stringify({
+        user: registerResult.user,
+        message: "Account created successfully!",
+      }),
+      {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   } catch (error) {
-    // Handle authentication errors
+    // Handle authentication errors (email already exists, weak password, etc.)
     if (error instanceof AuthenticationError) {
-      return new Response(JSON.stringify(createErrorResponse("Unauthorized", error.message, 401)), {
-        status: 401,
+      // Return specific status codes for different auth errors
+      const status = error.message.includes("already exists") ? 409 : 400;
+
+      return new Response(JSON.stringify(createErrorResponse("Registration failed", error.message, status)), {
+        status,
         headers: { "Content-Type": "application/json" },
       });
     }
@@ -91,8 +100,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Handle unexpected errors
-    logError(new Error("Unexpected error in POST /api/auth/login"), {
-      operation: "post_auth_login_endpoint",
+    logError(new Error("Unexpected error in POST /api/auth/register"), {
+      operation: "post_auth_register_endpoint",
       error: error instanceof Error ? error.message : "Unknown error",
       stack: error instanceof Error ? error.stack : undefined,
     });

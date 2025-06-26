@@ -3,11 +3,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { toast } from "sonner";
 
-interface UpdatePasswordFormProps {
-  token?: string;
-}
-
-const UpdatePasswordForm: React.FC<UpdatePasswordFormProps> = ({ token }) => {
+const UpdatePasswordForm: React.FC = () => {
   const [formData, setFormData] = React.useState({
     password: "",
     confirmPassword: "",
@@ -57,10 +53,7 @@ const UpdatePasswordForm: React.FC<UpdatePasswordFormProps> = ({ token }) => {
       return;
     }
 
-    if (!token) {
-      toast.error("Invalid or missing reset token");
-      return;
-    }
+    // No need to check token in PKCE flow - user is authenticated after clicking reset link
 
     setIsLoading(true);
 
@@ -72,7 +65,6 @@ const UpdatePasswordForm: React.FC<UpdatePasswordFormProps> = ({ token }) => {
         },
         body: JSON.stringify({
           password: formData.password,
-          token,
         }),
       });
 
@@ -95,30 +87,8 @@ const UpdatePasswordForm: React.FC<UpdatePasswordFormProps> = ({ token }) => {
     setFormData((prev) => ({ ...prev, [field]: e.target.value }));
   };
 
-  if (!token) {
-    return (
-      <div className="text-center space-y-4">
-        <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center">
-          <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </div>
-        <h3 className="text-lg font-medium text-gray-900">Invalid Reset Link</h3>
-        <p className="text-gray-600">This password reset link is invalid or has expired. Please request a new one.</p>
-        <div className="space-y-2">
-          <a
-            href="/forgot-password"
-            className="inline-block w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Request New Reset Link
-          </a>
-          <a href="/login" className="block text-blue-600 hover:text-blue-500">
-            Back to sign in
-          </a>
-        </div>
-      </div>
-    );
-  }
+  // In PKCE flow, user is automatically authenticated after clicking reset link
+  // No need to validate token manually
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

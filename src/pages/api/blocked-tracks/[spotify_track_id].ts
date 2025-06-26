@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import type { SuccessMessageDTO, SpotifyTrackId } from "../../../types";
 import { BlockedTracksService } from "../../../lib/services/blocked-tracks.service";
 import { validateSpotifyTrackId } from "../../../lib/utils/validation";
-import { TEST_USER_ID } from "../../../db/supabase.server";
+import { getAuthenticatedUserId } from "../../../lib/utils/auth";
 import { TrackNotFoundError, DatabaseError, createErrorResponse, logError } from "../../../lib/utils/errors";
 
 // Disable prerendering for API routes
@@ -18,8 +18,8 @@ export const prerender = false;
  */
 export const DELETE: APIRoute = async ({ params, locals }) => {
   try {
-    // Use test user ID for development (no authentication required yet)
-    const userId = TEST_USER_ID;
+    // Get authenticated user ID from locals
+    const userId = getAuthenticatedUserId(locals);
 
     // Extract spotify_track_id from URL params
     const { spotify_track_id } = params;

@@ -2,6 +2,7 @@
 import Layout from "./Layout.astro";
 import { NavigationContainer } from "../components/navigation/NavigationContainer.tsx";
 import type { User } from "../types";
+import { Toaster } from "sonner";
 
 interface Props {
   title?: string;
@@ -33,4 +34,5 @@ const currentPath = Astro.url.pathname;
 
   <!-- Main content -->
   <slot />
+  <Toaster client:load />
 </Layout>

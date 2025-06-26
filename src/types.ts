@@ -112,6 +112,76 @@ export interface AuthStatusResponseDTO {
   user: User | null;
 }
 
+/** Request DTO for POST /api/auth/forgot-password */
+export interface ForgotPasswordRequestDTO {
+  email: string;
+}
+
+/** Response DTO for POST /api/auth/forgot-password */
+export interface ForgotPasswordResponseDTO {
+  success: boolean;
+  message: string;
+}
+
+/** Request DTO for POST /api/auth/register */
+export interface RegisterRequestDTO {
+  email: string;
+  password: string;
+}
+
+/** Response DTO for POST /api/auth/register */
+export interface RegisterResponseDTO {
+  user: {
+    id: string;
+    email: string;
+  };
+  message: string;
+}
+
+/** Request DTO for POST /api/auth/update-password */
+export interface UpdatePasswordRequestDTO {
+  password: string;
+  token: string;
+}
+
+/** Response DTO for POST /api/auth/update-password */
+export interface UpdatePasswordResponseDTO {
+  success: boolean;
+  message: string;
+}
+
+// =============================================================================
+// AUTH SERVICE TYPES
+// =============================================================================
+
+/** Service layer response for login operation */
+export interface LoginServiceResponse {
+  user: {
+    id: string;
+    email: string;
+  };
+}
+
+/** Service layer response for register operation */
+export interface RegisterServiceResponse {
+  user: {
+    id: string;
+    email: string;
+  };
+}
+
+/** Service layer response for forgot password operation */
+export interface ForgotPasswordServiceResponse {
+  success: boolean;
+  message: string;
+}
+
+/** Service layer response for update password operation */
+export interface UpdatePasswordServiceResponse {
+  success: boolean;
+  message: string;
+}
+
 // =============================================================================
 // NAVIGATION TYPES
 // =============================================================================

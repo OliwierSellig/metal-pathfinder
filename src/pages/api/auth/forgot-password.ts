@@ -9,14 +9,14 @@ import {
   createValidationErrorResponse,
   logError,
 } from "../../../lib/utils/errors";
-import { loginRequestSchema, formatZodErrors } from "../../../lib/utils/validation";
+import { forgotPasswordRequestSchema, formatZodErrors } from "../../../lib/utils/validation";
 
 // Disable prerendering for this API route
 export const prerender = false;
 
 /**
- * POST /api/auth/login
- * Logs in a user with email and password
+ * POST /api/auth/forgot-password
+ * Sends password reset email to user
  */
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -37,13 +37,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Validate request body structure with Zod
-    const validationResult = loginRequestSchema.safeParse(requestBody);
+    const validationResult = forgotPasswordRequestSchema.safeParse(requestBody);
 
     if (!validationResult.success) {
       const validationErrors = formatZodErrors(validationResult.error);
 
-      logError(new ValidationError("Login request validation failed", validationErrors), {
-        operation: "validate_login_request",
+      logError(new ValidationError("Forgot password request validation failed", validationErrors), {
+        operation: "validate_forgot_password_request",
         request_body: requestBody,
       });
 
@@ -53,7 +53,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    const { email, password } = validationResult.data;
+    const { email } = validationResult.data;
 
     // Create Supabase server instance and AuthService
     const supabase = createSupabaseServerInstance({
@@ -62,11 +62,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
     const authService = new AuthService(supabase);
 
-    // Attempt to sign in user using AuthService
-    const loginResult = await authService.loginUser(email, password);
+    // Send password reset email using AuthService
+    // Use callback endpoint for PKCE flow - it will handle session and redirect to /update-password
+    const redirectUrl = `${new URL(request.url).origin}/api/auth/callback?next=/update-password`;
+    const resetResult = await authService.forgotPassword(email, redirectUrl);
 
     // Return success response
-    return new Response(JSON.stringify(loginResult), {
+    return new Response(JSON.stringify(resetResult), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
@@ -91,8 +93,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Handle unexpected errors
-    logError(new Error("Unexpected error in POST /api/auth/login"), {
-      operation: "post_auth_login_endpoint",
+    logError(new Error("Unexpected error in POST /api/auth/forgot-password"), {
+      operation: "post_auth_forgot_password_endpoint",
       error: error instanceof Error ? error.message : "Unknown error",
       stack: error instanceof Error ? error.stack : undefined,
     });

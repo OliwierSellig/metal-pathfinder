@@ -1,6 +1,5 @@
 import React from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Button } from "../ui/button";
 import SpotifyTrackSearch from "./SpotifyTrackSearch.tsx";
 import type { SpotifyTrackSearchDTO } from "../../types";
 
@@ -44,12 +43,17 @@ const EmptyLibraryModal: React.FC<EmptyLibraryModalProps> = ({ isOpen, onClose, 
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={undefined} modal>
+      <DialogContent
+        className="max-w-2xl max-h-[80vh] overflow-y-auto"
+        onInteractOutside={(e) => e.preventDefault()}
+        showCloseButton={false}
+      >
         <DialogHeader>
           <DialogTitle>Add Your First Track</DialogTitle>
           <DialogDescription>
-            Search and add a metal track to your library to start getting personalized recommendations.
+            You need to add at least one metal track to your library before you can discover new music. This helps our
+            AI understand your taste.
           </DialogDescription>
         </DialogHeader>
 
@@ -61,11 +65,7 @@ const EmptyLibraryModal: React.FC<EmptyLibraryModalProps> = ({ isOpen, onClose, 
           />
         </div>
 
-        <div className="flex justify-end mt-6">
-          <Button variant="outline" onClick={onClose} disabled={isAdding}>
-            Cancel
-          </Button>
-        </div>
+        {/* Usunąłem przycisk Cancel - modal nie może być zamknięty bez wybrania utworu */}
       </DialogContent>
     </Dialog>
   );

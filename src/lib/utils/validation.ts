@@ -24,6 +24,28 @@ export const loginRequestSchema = z.object({
 });
 
 /**
+ * Zod schema for forgot password request validation
+ */
+export const forgotPasswordRequestSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+});
+
+/**
+ * Zod schema for register request validation
+ */
+export const registerRequestSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+});
+
+/**
+ * Zod schema for update password request validation
+ */
+export const updatePasswordRequestSchema = z.object({
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+});
+
+/**
  * Zod schema for LibraryQueryParams (GET /api/library)
  * Supports pagination and sorting with sensible defaults
  */

@@ -400,8 +400,9 @@ export function useDiscoverView() {
       ...prev,
       activeModal: { type: null, data: null },
     }));
-    // Nie potrzebujemy odświeżać biblioteki - addTrackToLibrary już to zrobiło optymistycznie
-  }, []);
+    // Odświeżamy bibliotekę po dodaniu utworu z modala (EmptyLibraryModal robi bezpośredni fetch)
+    loadLibrary();
+  }, [loadLibrary]);
 
   // =============================================================================
   // EFFECTS

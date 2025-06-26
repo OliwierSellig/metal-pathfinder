@@ -13,7 +13,7 @@ import {
   AIGenerationError,
   TrackNotFoundError,
 } from "../../../lib/utils/errors";
-import { TEST_USER_ID } from "../../../db/supabase.server";
+import { getAuthenticatedUserId } from "../../../lib/utils/auth";
 import type {
   AIRecommendationsResponseDTO,
   AIRecommendationDTO,
@@ -36,6 +36,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const libraryService = new LibraryService(locals.supabase);
   const blockedTracksService = new BlockedTracksService(locals.supabase);
 
+  // Get authenticated user ID from locals
+  const userId = getAuthenticatedUserId(locals);
+
   try {
     // Parse and validate request body
     let requestBody;
@@ -44,7 +47,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     } catch {
       logError(new ValidationError("Invalid JSON in request body", []), {
         operation: "ai_recommendations_endpoint",
-        user_id: TEST_USER_ID,
+        user_id: userId,
       });
 
       return new Response(
@@ -69,7 +72,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       logError(new ValidationError("Request parameter validation failed", validationErrors), {
         operation: "ai_recommendations_endpoint",
         raw_body: requestBody,
-        user_id: TEST_USER_ID,
+        user_id: userId,
       });
 
       return new Response(
@@ -89,12 +92,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const { base_track_id, description, temperature, count = 10 } = validationResult.data;
 
     // Step 1: Validate base track exists in user's library
-    const isTrackInLibrary = await libraryService.isTrackInLibrary(TEST_USER_ID, base_track_id);
+    const isTrackInLibrary = await libraryService.isTrackInLibrary(userId, base_track_id);
 
     if (!isTrackInLibrary) {
       logError(new TrackNotFoundError("Base track not found in user's library", base_track_id), {
         operation: "ai_recommendations_endpoint",
-        user_id: TEST_USER_ID,
+        user_id: userId,
         base_track_id,
       });
 
@@ -112,8 +115,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Step 3: Get exclusion lists (library + blocked tracks) in parallel
     const [libraryTracks, blockedTracks] = await Promise.all([
-      libraryService.getUserLibrary(TEST_USER_ID, { limit: 1000, offset: 0, sort: "created_at_desc" }),
-      blockedTracksService.getActiveBlockedTracks(TEST_USER_ID),
+      libraryService.getUserLibrary(userId, { limit: 1000, offset: 0, sort: "created_at_desc" }),
+      blockedTracksService.getActiveBlockedTracks(userId),
     ]);
 
     // Combine exclusion lists - track IDs
@@ -155,7 +158,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Log AI generation results
     console.info("AI recommendations generated", {
       operation: "ai_recommendations_generation",
-      user_id: TEST_USER_ID,
+      user_id: userId,
       requested_count: count,
       ai_multiplier_count: count * 2,
       ai_generated_count: aiRecommendations.recommendations.length,
@@ -174,7 +177,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // DETAILED LOGGING: Log each AI recommendation and its Spotify search result
     console.info("DETAILED: AI recommendations with Spotify search results", {
       operation: "ai_recommendations_detailed_search",
-      user_id: TEST_USER_ID,
+      user_id: userId,
       ai_recommendations: aiRecommendations.recommendations.map((rec, idx) => ({
         index: idx,
         ai_song_title: rec.song_title,
@@ -199,7 +202,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // DETAILED LOGGING: Show exactly which tracks were filtered out
     console.info("DETAILED: Track filtering results", {
       operation: "ai_recommendations_detailed_filtering",
-      user_id: TEST_USER_ID,
+      user_id: userId,
       total_ai_recommendations: aiRecommendations.recommendations.length,
       found_in_spotify: foundTrackIds.length,
       filtered_out_count: aiRecommendations.recommendations.length - foundTrackIds.length,
@@ -219,7 +222,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (foundTrackIds.length === 0) {
       logError(new AIGenerationError("No tracks found in Spotify for AI recommendations"), {
         operation: "ai_recommendations_endpoint",
-        user_id: TEST_USER_ID,
+        user_id: userId,
         base_track_id,
         ai_generated: aiRecommendations.recommendations.length,
         spotify_found: 0,
@@ -239,7 +242,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Log search results for debugging
     console.info("Track search completed", {
       operation: "ai_recommendations_track_search",
-      user_id: TEST_USER_ID,
+      user_id: userId,
       ai_generated: aiRecommendations.recommendations.length,
       spotify_found: foundTrackIds.length,
       not_found: trackSearchResults.filter((r) => !r.found).length,
@@ -252,7 +255,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (notFoundTracks.length > 0) {
       console.warn("Some AI recommendations not found in Spotify", {
         operation: "ai_recommendations_track_search",
-        user_id: TEST_USER_ID,
+        user_id: userId,
         not_found_tracks: notFoundTracks.map((t) => ({ song: t.song_title, artist: t.artist_name })),
         timestamp: new Date().toISOString(),
       });
@@ -264,7 +267,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Log track details retrieval
     console.info("Track details retrieved", {
       operation: "ai_recommendations_track_details",
-      user_id: TEST_USER_ID,
+      user_id: userId,
       requested_track_ids: foundTrackIds.length,
       retrieved_track_details: recommendedTrackDetails.length,
       final_count_limit: count,
@@ -330,7 +333,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // DETAILED LOGGING: Log final recommendations being sent to user
     console.info("DETAILED: Final recommendations mapping", {
       operation: "ai_recommendations_final_mapping",
-      user_id: TEST_USER_ID,
+      user_id: userId,
       requested_count: count,
       track_details_available: recommendedTrackDetails.length,
       final_recommendations_count: recommendations.length,
@@ -372,7 +375,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Log successful operation
     console.info("AI recommendations generated successfully", {
       operation: "ai_recommendations_endpoint",
-      user_id: TEST_USER_ID,
+      user_id: userId,
       base_track_id,
       generated_count: recommendations.length,
       temperature,
@@ -391,7 +394,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (error instanceof ValidationError) {
       logError(error, {
         operation: "ai_recommendations_endpoint",
-        user_id: TEST_USER_ID,
+        user_id: userId,
         generation_time_ms: generationTime,
       });
 
@@ -419,7 +422,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (error instanceof AIGenerationError) {
       logError(error, {
         operation: "ai_recommendations_endpoint",
-        user_id: TEST_USER_ID,
+        user_id: userId,
         generation_time_ms: generationTime,
       });
 
@@ -435,7 +438,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (error instanceof OpenAIAPIError) {
       logError(error, {
         operation: "ai_recommendations_endpoint",
-        user_id: TEST_USER_ID,
+        user_id: userId,
         generation_time_ms: generationTime,
       });
 
@@ -463,7 +466,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (error instanceof SpotifyAPIError) {
       logError(error, {
         operation: "ai_recommendations_endpoint",
-        user_id: TEST_USER_ID,
+        user_id: userId,
         generation_time_ms: generationTime,
       });
 
@@ -491,7 +494,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Handle unexpected errors
     logError(new Error("Unexpected error in AI recommendations endpoint", { cause: error }), {
       operation: "ai_recommendations_endpoint",
-      user_id: TEST_USER_ID,
+      user_id: userId,
       generation_time_ms: generationTime,
     });
 

@@ -3,10 +3,6 @@ import { createServerClient, type CookieOptionsWithName } from "@supabase/ssr";
 
 import type { Database } from "../db/database.types.ts";
 
-// Test user ID for development purposes
-// This user must exist in auth.users table
-export const TEST_USER_ID = "d9d5061b-a83f-4b4b-8979-39e570a9971a" as const;
-
 export const cookieOptions: CookieOptionsWithName = {
   path: "/",
   secure: true,

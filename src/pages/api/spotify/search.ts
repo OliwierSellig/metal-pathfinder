@@ -3,7 +3,7 @@ import { SpotifyService } from "../../../lib/services/spotify.service";
 import { searchTrackQueryParamsSchema } from "../../../lib/utils/validation";
 import { createErrorResponse, logError, ValidationError, SpotifyAPIError } from "../../../lib/utils/errors";
 import { formatZodErrors } from "../../../lib/utils/validation";
-import { TEST_USER_ID } from "../../../db/supabase.server";
+import { getAuthenticatedUserId } from "../../../lib/utils/auth";
 
 // Disable prerendering for API routes
 export const prerender = false;
@@ -12,8 +12,11 @@ export const prerender = false;
  * GET /api/spotify/search
  * Searches for tracks in Spotify catalog
  */
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, locals }) => {
   const spotifyService = new SpotifyService();
+
+  // Get authenticated user ID from locals
+  const userId = getAuthenticatedUserId(locals);
 
   try {
     // Extract and validate query parameters
@@ -37,7 +40,7 @@ export const GET: APIRoute = async ({ url }) => {
       logError(new ValidationError("Search parameter validation failed", validationErrors), {
         operation: "validate_search_params",
         raw_params: rawParams,
-        user_id: TEST_USER_ID,
+        user_id: userId,
       });
 
       return new Response(
@@ -62,7 +65,7 @@ export const GET: APIRoute = async ({ url }) => {
     // Log successful operation
     console.info("Spotify search completed successfully", {
       operation: "spotify_search_endpoint",
-      user_id: TEST_USER_ID,
+      user_id: userId,
       query: validatedParams.q,
       total_results: searchResults.total,
       returned_tracks: searchResults.tracks.length,
@@ -78,7 +81,7 @@ export const GET: APIRoute = async ({ url }) => {
     if (error instanceof SpotifyAPIError) {
       logError(error, {
         operation: "spotify_search_endpoint",
-        user_id: TEST_USER_ID,
+        user_id: userId,
         url: url.toString(),
       });
 
@@ -113,7 +116,7 @@ export const GET: APIRoute = async ({ url }) => {
     // Handle unexpected errors
     logError(new Error("Unexpected error in Spotify search endpoint", { cause: error }), {
       operation: "spotify_search_endpoint",
-      user_id: TEST_USER_ID,
+      user_id: userId,
       url: url.toString(),
     });
 

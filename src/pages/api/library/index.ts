@@ -15,7 +15,7 @@ import {
   createValidationErrorResponse,
   logError,
 } from "../../../lib/utils/errors";
-import { TEST_USER_ID } from "../../../db/supabase.server";
+import { getAuthenticatedUserId } from "../../../lib/utils/auth";
 
 // Disable prerendering for this API route
 export const prerender = false;
@@ -97,8 +97,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
+    // Get authenticated user ID from locals
+    const userId = getAuthenticatedUserId(locals);
+
     // Add track to library using service
-    const newTrack = await libraryService.addTrackToLibrary(TEST_USER_ID, validatedSpotifyTrackId);
+    const newTrack = await libraryService.addTrackToLibrary(userId, validatedSpotifyTrackId);
 
     // Return success response with 201 Created
     return new Response(JSON.stringify(newTrack), {
@@ -184,8 +187,11 @@ export const GET: APIRoute = async ({ url, locals }) => {
     // Extract validated data with proper defaults applied by Zod
     const validatedParams = validationResult.data;
 
+    // Get authenticated user ID from locals
+    const userId = getAuthenticatedUserId(locals);
+
     // Get user library using service
-    const libraryResponse = await libraryService.getUserLibrary(TEST_USER_ID, {
+    const libraryResponse = await libraryService.getUserLibrary(userId, {
       limit: validatedParams.limit ?? 50,
       offset: validatedParams.offset ?? 0,
       sort: validatedParams.sort ?? "created_at_desc",

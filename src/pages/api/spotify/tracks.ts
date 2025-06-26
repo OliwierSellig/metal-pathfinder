@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { SpotifyService } from "../../../lib/services/spotify.service";
 import { createErrorResponse, logError } from "../../../lib/utils/errors";
-import { TEST_USER_ID } from "../../../db/supabase.server";
+import { getAuthenticatedUserId } from "../../../lib/utils/auth";
 
 // Disable prerendering for API routes
 export const prerender = false;
@@ -10,7 +10,7 @@ export const prerender = false;
  * POST /api/spotify/tracks
  * Get details for multiple tracks by IDs
  */
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   const spotifyService = new SpotifyService();
 
   try {
@@ -71,9 +71,10 @@ export const POST: APIRoute = async ({ request }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
+    const userId = getAuthenticatedUserId(locals);
     logError(new Error("Unexpected error in tracks endpoint", { cause: error }), {
       operation: "spotify_tracks_endpoint",
-      user_id: TEST_USER_ID,
+      user_id: userId,
     });
 
     return new Response(
