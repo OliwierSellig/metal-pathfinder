@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useDiscoverView } from "../../hooks/useDiscoverView";
-import { Toaster } from "../ui/sonner";
 import EmptyLibraryModal from "../discover/EmptyLibraryModal";
 import RecommendationForm from "../discover/RecommendationForm";
 import RecommendationsList from "../discover/RecommendationsList";
@@ -15,7 +14,7 @@ import RecommendationDetailsModal from "../discover/RecommendationDetailsModal";
  * Zarządza stanem całego widoku, w tym ładowaniem danych, obsługą błędów
  * oraz logiką rekomendacji zgodnie z planem implementacji
  */
-const DiscoverViewContent: React.FC = () => {
+export default function DiscoverView() {
   const { state, handlers } = useDiscoverView();
 
   const {
@@ -99,16 +98,4 @@ const DiscoverViewContent: React.FC = () => {
       />
     </>
   );
-};
-
-// Main component
-const DiscoverView: React.FC = () => {
-  return (
-    <>
-      <DiscoverViewContent />
-      <Toaster />
-    </>
-  );
-};
-
-export default DiscoverView;
+}

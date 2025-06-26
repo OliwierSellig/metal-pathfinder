@@ -13,7 +13,7 @@ import {
   AIGenerationError,
   TrackNotFoundError,
 } from "../../../lib/utils/errors";
-import { TEST_USER_ID } from "../../../db/supabase.client";
+import { TEST_USER_ID } from "../../../db/supabase.server";
 import type {
   AIRecommendationsResponseDTO,
   AIRecommendationDTO,

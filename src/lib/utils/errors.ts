@@ -42,6 +42,17 @@ export class ValidationError extends Error {
 }
 
 /**
+ * Authentication error for invalid credentials (401 Unauthorized)
+ */
+export class AuthenticationError extends Error {
+  public readonly statusCode = 401;
+  constructor(message = "Invalid email or password") {
+    super(message);
+    this.name = "AuthenticationError";
+  }
+}
+
+/**
  * Error thrown when AI generation fails
  */
 export class AIGenerationError extends Error {

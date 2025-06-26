@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useLibraryView } from "../../hooks/useLibraryView";
-import { Toaster } from "../ui/sonner";
 import LibraryTrackCard from "../library/LibraryTrackCard";
 import PaginationControls from "../library/PaginationControls";
 import DeleteConfirmationModal from "../library/DeleteConfirmationModal";
@@ -14,7 +13,7 @@ import DeleteConfirmationModal from "../library/DeleteConfirmationModal";
  * Zarządza stanem całego widoku, w tym ładowaniem danych, obsługą błędów
  * oraz logiką paginacji zgodnie z planem implementacji
  */
-const LibraryViewContent: React.FC = () => {
+export default function LibraryView() {
   const { state, handlers } = useLibraryView();
 
   const { handlePageChange, handleDeleteTrack, handleConfirmDelete, handleCancelDelete, handleRetryLoad } = handlers;
@@ -92,16 +91,4 @@ const LibraryViewContent: React.FC = () => {
       />
     </>
   );
-};
-
-// Main component
-const LibraryView: React.FC = () => {
-  return (
-    <>
-      <LibraryViewContent />
-      <Toaster />
-    </>
-  );
-};
-
-export default LibraryView;
+}

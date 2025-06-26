@@ -1,9 +1,9 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import ProtectedLayout from "../layouts/ProtectedLayout.astro";
 import DiscoverView from "../components/views/DiscoverView.tsx";
 ---
 
-<Layout title="Discover New Metal Music">
+<ProtectedLayout title="Discover New Metal Music">
   <main>
     <div class="container mx-auto px-4 py-8 max-w-6xl">
       <div class="mb-8">
@@ -15,4 +15,4 @@ import DiscoverView from "../components/views/DiscoverView.tsx";
       <DiscoverView client:load />
     </div>
   </main>
-</Layout>
+</ProtectedLayout>

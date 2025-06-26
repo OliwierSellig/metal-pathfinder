@@ -97,6 +97,81 @@ export interface SuccessMessageDTO {
 }
 
 // =============================================================================
+// AUTH DTOs
+// =============================================================================
+
+/** Response DTO for POST /api/auth/logout */
+export interface LogoutResponseDTO {
+  success: boolean;
+  message: string;
+}
+
+/** Response DTO for GET /api/auth/status */
+export interface AuthStatusResponseDTO {
+  authenticated: boolean;
+  user: User | null;
+}
+
+// =============================================================================
+// NAVIGATION TYPES
+// =============================================================================
+
+/** User type from Supabase Auth */
+export interface User {
+  id: string;
+  email: string;
+  email_confirmed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Navigation item definition */
+export interface NavigationItem {
+  id: string;
+  label: string;
+  href: string;
+  icon?: string; // optional icon
+  ariaLabel?: string;
+}
+
+/** Props for main Navigation component */
+export interface NavigationProps {
+  user: User;
+  currentPath: string;
+  onLogout: () => Promise<void>;
+  isLoading?: boolean;
+}
+
+/** Error type for logout operation handling */
+export interface LogoutError {
+  message: string;
+  code?: string;
+}
+
+/** State hook for mobile navigation */
+export interface UseNavigationMobileState {
+  isMenuOpen: boolean;
+  toggleMenu: () => void;
+  closeMenu: () => void;
+}
+
+/** Return type for useAuthAPI hook */
+export interface UseAuthAPIReturn {
+  user: User | null;
+  loading: boolean;
+  logout: () => Promise<void>;
+  error: string | null;
+  refreshAuth: () => Promise<void>;
+}
+
+/** Return type for useNavigationMobile hook */
+export interface UseNavigationMobileReturn {
+  isMenuOpen: boolean;
+  toggleMenu: () => void;
+  closeMenu: () => void;
+}
+
+// =============================================================================
 // ERROR DTOs
 // =============================================================================
 

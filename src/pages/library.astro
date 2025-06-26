@@ -1,9 +1,9 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import ProtectedLayout from "../layouts/ProtectedLayout.astro";
 import LibraryView from "../components/views/LibraryView.tsx";
 ---
 
-<Layout title="Your Music Library">
+<ProtectedLayout title="Your Music Library">
   <main>
     <div class="container mx-auto px-4 py-8 max-w-6xl">
       <div class="mb-8">
@@ -13,4 +13,4 @@ import LibraryView from "../components/views/LibraryView.tsx";
       <LibraryView client:load />
     </div>
   </main>
-</Layout>
+</ProtectedLayout>

@@ -31,3 +31,7 @@ CI/CD i Hosting:
 
 - Github Actions do tworzenia pipeline’ów CI/CD
 - DigitalOcean do hostowania aplikacji za pośrednictwem obrazu docker
+
+Manager paczek
+
+- Do zarządzania paczkami w Node uzywamy wyłącznie Bun

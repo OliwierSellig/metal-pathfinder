@@ -16,6 +16,14 @@ export const spotifyTrackIdSchema = z
   .regex(/^[a-zA-Z0-9]{22}$/, "Spotify track ID must contain only alphanumeric characters");
 
 /**
+ * Zod schema for login request validation
+ */
+export const loginRequestSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+/**
  * Zod schema for LibraryQueryParams (GET /api/library)
  * Supports pagination and sorting with sensible defaults
  */

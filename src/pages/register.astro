@@ -1,0 +1,17 @@
+---
+import Layout from "../layouts/Layout.astro";
+import AuthFormContainer from "../components/auth/AuthFormContainer.tsx";
+import RegisterForm from "../components/auth/RegisterForm.tsx";
+
+export const prerender = false;
+---
+
+<Layout title="Sign Up - MetalPathfinder">
+  <AuthFormContainer
+    title="Sign Up"
+    description="Join us to discover amazing metal music tailored to your taste."
+    client:load
+  >
+    <RegisterForm client:load />
+  </AuthFormContainer>
+</Layout>

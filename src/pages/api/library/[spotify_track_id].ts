@@ -2,7 +2,7 @@ import type { APIContext } from "astro";
 import type { SuccessMessageDTO, SpotifyTrackId } from "../../../types";
 import { LibraryService } from "../../../lib/services/library.service";
 import { validateSpotifyTrackId } from "../../../lib/utils/validation";
-import { TEST_USER_ID } from "../../../db/supabase.client";
+import { TEST_USER_ID } from "../../../db/supabase.server";
 import {
   LastTrackError,
   TrackNotFoundError,

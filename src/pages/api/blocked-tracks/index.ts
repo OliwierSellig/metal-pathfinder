@@ -3,7 +3,7 @@ import type { BlockTrackCommand } from "../../../types";
 import { BlockedTracksService } from "../../../lib/services/blocked-tracks.service";
 import { blockedTracksQueryParamsSchema, blockTrackCommandSchema } from "../../../lib/utils/validation";
 import { formatZodErrors } from "../../../lib/utils/validation";
-import { TEST_USER_ID } from "../../../db/supabase.client";
+import { TEST_USER_ID } from "../../../db/supabase.server";
 import {
   DatabaseError,
   DuplicateTrackError,

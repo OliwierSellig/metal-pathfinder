@@ -15,7 +15,7 @@ import {
   createValidationErrorResponse,
   logError,
 } from "../../../lib/utils/errors";
-import { TEST_USER_ID } from "../../../db/supabase.client";
+import { TEST_USER_ID } from "../../../db/supabase.server";
 
 // Disable prerendering for this API route
 export const prerender = false;

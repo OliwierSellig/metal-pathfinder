@@ -1,9 +1,9 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import ProtectedLayout from "../layouts/ProtectedLayout.astro";
 import BlockedTracksView from "../components/views/BlockedTracksView.tsx";
 ---
 
-<Layout title="Blocked Tracks">
+<ProtectedLayout title="Blocked Tracks">
   <main>
     <div class="container mx-auto px-4 py-8 max-w-6xl">
       <div class="mb-8">
@@ -16,4 +16,4 @@ import BlockedTracksView from "../components/views/BlockedTracksView.tsx";
       <BlockedTracksView client:load />
     </div>
   </main>
-</Layout>
+</ProtectedLayout>

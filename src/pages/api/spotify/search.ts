@@ -3,7 +3,7 @@ import { SpotifyService } from "../../../lib/services/spotify.service";
 import { searchTrackQueryParamsSchema } from "../../../lib/utils/validation";
 import { createErrorResponse, logError, ValidationError, SpotifyAPIError } from "../../../lib/utils/errors";
 import { formatZodErrors } from "../../../lib/utils/validation";
-import { TEST_USER_ID } from "../../../db/supabase.client";
+import { TEST_USER_ID } from "../../../db/supabase.server";
 
 // Disable prerendering for API routes
 export const prerender = false;

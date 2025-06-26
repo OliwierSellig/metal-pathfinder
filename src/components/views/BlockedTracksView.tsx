@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useBlockedTracksView } from "../../hooks/useBlockedTracksView";
-import { Toaster } from "../ui/sonner";
 import BlockedTracksList from "../blocked-tracks/BlockedTracksList";
 import UnblockConfirmationModal from "../blocked-tracks/UnblockConfirmationModal";
 
@@ -13,7 +12,7 @@ import UnblockConfirmationModal from "../blocked-tracks/UnblockConfirmationModal
  * Zarządza stanem całego widoku, w tym ładowaniem danych, obsługą błędów
  * oraz logiką odblokowywania utworów zgodnie z planem implementacji
  */
-const BlockedTracksViewContent: React.FC = () => {
+export default function BlockedTracksView() {
   const { state, handlers } = useBlockedTracksView();
 
   // =============================================================================
@@ -113,16 +112,4 @@ const BlockedTracksViewContent: React.FC = () => {
       />
     </div>
   );
-};
-
-// Main component with Toaster
-const BlockedTracksView: React.FC = () => {
-  return (
-    <>
-      <BlockedTracksViewContent />
-      <Toaster />
-    </>
-  );
-};
-
-export default BlockedTracksView;
+}

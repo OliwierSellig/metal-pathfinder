@@ -66,26 +66,68 @@ Poza zakresem MVP:
 
 ## 5. Historyjki użytkowników
 
-### US-001 – Rejestracja i logowanie przez SupaBase
+### US-001 – Rejestracja użytkownika
 
-Opis: Jako nowy użytkownik chcę zarejestrować się i zalogować przy użyciu email/hasła, aby móc korzystać z aplikacji i zapisywać swoją bibliotekę.
+Opis: Jako nowy użytkownik chcę móc założyć konto w aplikacji, podając swój adres e-mail i hasło, aby uzyskać dostęp do jej funkcjonalności.
 Kryteria akceptacji:
 
-1. Użytkownik może się zarejestrować podając email i hasło.
-2. Użytkownik może się zalogować używając swoich danych.
-3. Sesja jest bezpiecznie przechowywana w SupaBase.
-4. Niepowodzenie autoryzacji wyświetla komunikat błędu.
+1. Istnieje dedykowana strona `/register` z formularzem rejestracyjnym zawierającym pola na e-mail i hasło.
+2. Formularz waliduje poprawność formatu e-mail oraz wymagania dotyczące siły hasła (np. minimalna długość).
+3. Pomyślna rejestracja tworzy nowego użytkownika w Supabase Auth.
+4. Po pomyślnej rejestracji użytkownik jest automatycznie przekierowywany na stronę logowania (`/login`).
+5. W przypadku błędu (np. zajęty e-mail) użytkownik otrzymuje czytelny komunikat.
 
-### US-002 – Wybór startowych utworów
+### US-002 – Logowanie użytkownika
 
-Opis: Jako nowy użytkownik chcę wybrać co najmniej jeden ulubiony utwór metalowy, aby zbudować swoją początkową bibliotekę.
+Opis: Jako zarejestrowany użytkownik chcę móc zalogować się do aplikacji przy użyciu mojego e-maila i hasła, aby uzyskać dostęp do moich spersonalizowanych danych (biblioteka, blokady).
 Kryteria akceptacji:
 
-1. Interfejs wyszukiwania pozwala wskazać utwory z katalogu Spotify.
-2. Przycisk „Dalej” jest aktywny dopiero po wyborze ≥1 utworu.
-3. Wybrane utwory zapisywane są w bazie.
+1. Istnieje dedykowana strona `/login` z formularzem logowania.
+2. Formularz zawiera pola na e-mail, hasło oraz linki do stron `/register` i `/forgot-password`.
+3. Pomyślne logowanie przekierowuje użytkownika na stronę `/discover`.
+4. W przypadku podania błędnych danych logowania, użytkownik otrzymuje czytelny komunikat o błędzie.
 
-### US-003 – Wybór utworu bazowego
+### US-003 – Ochrona stron dla niezalogowanych użytkowników
+
+Opis: Jako system chcę zapewnić, że tylko zalogowani użytkownicy mają dostęp do chronionych stron, aby zabezpieczyć dane i spersonalizowane widoki.
+Kryteria akceptacji:
+
+1. Próba wejścia na strony `/discover`, `/library` lub `/blocked-tracks` przez niezalogowanego użytkownika skutkuje natychmiastowym przekierowaniem na stronę `/login`.
+2. Logika ochrony stron jest zaimplementowana centralnie (np. w middleware Astro).
+3. Zalogowany użytkownik, próbujący wejść na `/login` lub `/register`, jest przekierowywany na `/discover`.
+
+### US-004 – Odzyskiwanie zapomnianego hasła
+
+Opis: Jako użytkownik, który zapomniał hasła, chcę mieć możliwość jego zresetowania, aby odzyskać dostęp do mojego konta.
+Kryteria akceptacji:
+
+1. Strona `/login` zawiera link do strony odzyskiwania hasła (`/forgot-password`).
+2. Na stronie `/forgot-password` znajduje się formularz, w którym użytkownik podaje swój adres e-mail, aby otrzymać instrukcje resetowania.
+3. Po wysłaniu formularza, Supabase Auth wysyła na podany e-mail link do zresetowania hasła.
+4. Kliknięcie w link z e-maila przenosi użytkownika na dedykowaną stronę `/update-password`, gdzie może on wprowadzić i potwierdzić nowe hasło.
+5. Po pomyślnej zmianie hasła, użytkownik jest przekierowywany na stronę logowania (`/login`) z komunikatem o sukcesie.
+
+### US-005 – Zarządzanie sesją użytkownika
+
+Opis: Jako zalogowany użytkownik chcę, aby moja sesja była bezpiecznie zarządzana, abym nie musiał logować się przy każdej wizycie, oraz chcę mieć możliwość wylogowania się w dowolnym momencie.
+Kryteria akceptacji:
+
+1. Sesja użytkownika jest trwała, a token dostępowy jest automatycznie odświeżany przez klienta Supabase.
+2. W nawigacji aplikacji, w nagłówku, widoczny jest e-mail zalogowanego użytkownika oraz przycisk "Wyloguj".
+3. Kliknięcie przycisku "Wyloguj" kończy sesję, usuwa lokalne dane uwierzytelniające i przekierowuje użytkownika na stronę `/login`.
+
+### US-006 – Wybór pierwszego utworu do biblioteki
+
+Opis: Jako zalogowany użytkownik bez utworów w bibliotece chcę zostać zmuszony do wybrania pierwszego utworu metalowego, aby móc korzystać z funkcji odkrywania muzyki.
+Kryteria akceptacji:
+
+1. Po zalogowaniu, jeśli użytkownik nie ma żadnego utworu w bibliotece, zostaje przekierowany na stronę `/discover` (jeśli już tam nie jest).
+2. Na stronie `/discover` automatycznie otwiera się modal z wyszukiwarką Spotify, którego nie można zamknąć bez wybrania utworu.
+3. Modal pozwala wyszukać i wybrać dokładnie jeden utwór ze Spotify (nie więcej, nie mniej).
+4. Po wybraniu utworu, modal się zamyka, utwór zostaje zapisany w bibliotece jako pierwszy element.
+5. Użytkownik może teraz normalnie korzystać z funkcji odkrywania rekomendacji.
+
+### US-007 – Wybór utworu bazowego
 
 Opis: Jako użytkownik z kilkoma utworami startowymi chcę wskazać jeden z nich jako bazę dla pierwszej rekomendacji, aby otrzymać trafniejsze wyniki.
 Kryteria akceptacji:
@@ -93,7 +135,7 @@ Kryteria akceptacji:
 1. Po wyborze >1 utworu aplikacja wymusza wybór jednego.
 2. Wybrany utwór jest widoczny w widoku odkrywania.
 
-### US-004 – Opis preferencji
+### US-008 – Opis preferencji
 
 Opis: Jako użytkownik chcę opisać tekstowo, co podoba mi się w wybranym utworze, aby AI mogło lepiej zrozumieć moje gusta.
 Kryteria akceptacji:
@@ -102,7 +144,7 @@ Kryteria akceptacji:
 2. Placeholder pokazuje przykładowe opisy.
 3. Walidacja w locie informuje o brakującej długości.
 
-### US-005 – Ustawienie temperatury
+### US-009 – Ustawienie temperatury
 
 Opis: Jako użytkownik chcę regulować suwak Popularne↔Niszowe, aby otrzymać odpowiednio znane lub odkrywcze rekomendacje.
 Kryteria akceptacji:
@@ -110,7 +152,7 @@ Kryteria akceptacji:
 1. Suwak ma ciągły zakres 0–1 z opisami skrajnych wartości.
 2. Wybrana wartość jest przekazywana do zapytania AI.
 
-### US-006 – Otrzymanie rekomendacji
+### US-010 – Otrzymanie rekomendacji
 
 Opis: Jako użytkownik chcę otrzymać listę 10 nowych utworów, które nie znajdują się w mojej bibliotece, aby poszerzyć horyzonty muzyczne.
 Kryteria akceptacji:
@@ -119,16 +161,16 @@ Kryteria akceptacji:
 2. Żaden z utworów nie istnieje w bibliotece ani na liście blokad aktywnych.
 3. Dla każdego utworu prezentowane są: tytuł, wykonawca, BIO, uzasadnienie.
 
-### US-007 – Dodawanie do biblioteki
+### US-011 – Dodawanie do biblioteki
 
 Opis: Jako użytkownik chcę dodać rekomendowany utwór do mojej biblioteki jednym kliknięciem, aby zapisać go na przyszłość.
 Kryteria akceptacji:
 
-1. Kliknięcie „Dodaj” zapisuje utwór w bazie.
+1. Kliknięcie "Dodaj" zapisuje utwór w bazie.
 2. Utwór znika z listy rekomendacji lub oznacza się jako dodany.
 3. Operacja potwierdzona toastem.
 
-### US-008 – Blokowanie utworu
+### US-012 – Blokowanie utworu
 
 Opis: Jako użytkownik chcę zablokować utwór na 1 dzień, 7 dni lub na zawsze, aby nie był ponownie polecany.
 Kryteria akceptacji:
@@ -137,7 +179,7 @@ Kryteria akceptacji:
 2. Zablokowany utwór jest natychmiast usuwany z listy.
 3. Blokada wygasa automatycznie po czasie (o ile nie na zawsze).
 
-### US-009 – Przegląd biblioteki
+### US-013 – Przegląd biblioteki
 
 Opis: Jako użytkownik chcę przeglądać moją bibliotekę w formie listy, aby zarządzać zapisanymi utworami.
 Kryteria akceptacji:
@@ -146,7 +188,7 @@ Kryteria akceptacji:
 2. Lista ładuje się z bazy po wejściu.
 3. Brak utworów wyświetla stan pusty.
 
-### US-010 – Wyświetlanie BIO zespołu
+### US-014 – Wyświetlanie BIO zespołu
 
 Opis: Jako użytkownik chcę zobaczyć krótkie (max 5 zdań) BIO zespołu dla rekomendowanego utworu, aby lepiej poznać artystę.
 Kryteria akceptacji:
@@ -154,7 +196,7 @@ Kryteria akceptacji:
 1. BIO generowane jest przez AI na żądanie.
 2. Treść nie przekracza 5 zdań.
 
-### US-011 – Uzasadnienie rekomendacji
+### US-015 – Uzasadnienie rekomendacji
 
 Opis: Jako użytkownik chcę wiedzieć, dlaczego dany utwór został polecony, aby zrozumieć logikę AI.
 Kryteria akceptacji:
@@ -162,7 +204,7 @@ Kryteria akceptacji:
 1. AI zwraca krótkie wytłumaczenie (1–2 zdania) dla każdego utworu.
 2. Uzasadnienie jest wyświetlane pod nazwą utworu.
 
-### US-012 – Responsywny interfejs
+### US-016 – Responsywny interfejs
 
 Opis: Jako użytkownik mobilny chcę korzystać z aplikacji na ekranie 320 px, aby wygodnie odkrywać muzykę na telefonie.
 Kryteria akceptacji:
@@ -170,7 +212,7 @@ Kryteria akceptacji:
 1. Layout nie wymaga poziomego scrolla na 320 px.
 2. Wszystkie elementy są dostępne dotykowo.
 
-### US-013 – Obsługa błędów API
+### US-017 – Obsługa błędów API
 
 Opis: Jako użytkownik chcę otrzymywać przyjazne komunikaty, gdy Spotify lub OpenAI API jest niedostępne, aby wiedzieć, co się stało.
 Kryteria akceptacji:
@@ -178,23 +220,14 @@ Kryteria akceptacji:
 1. Błędy 4xx/5xx Spotify lub OpenAI API wyświetlają dedykowany stan błędu.
 2. Użytkownik może ponowić próbę.
 
-### US-014 – Bezpieczne przechowywanie sesji
-
-Opis: Jako użytkownik chcę, aby moja sesja była bezpiecznie przechowywana i odświeżana, abym nie musiał logować się zbyt często.
-Kryteria akceptacji:
-
-1. Sesja użytkownika jest przechowywana bezpiecznie w SupaBase.
-2. Token sesji odnawia dostęp automatycznie.
-3. Wylogowanie usuwa dane sesji lokalnie i w SupaBase.
-
-### US-015 – Usuwanie utworu z biblioteki
+### US-018 – Usuwanie utworu z biblioteki
 
 Opis: Jako użytkownik chcę móc usunąć utwór z mojej biblioteki, aby mógł on ponownie pojawić się w rekomendacjach, przy czym nie mogę usunąć ostatniego pozostałego utworu.
 Kryteria akceptacji:
 
-1. Każdy utwór w widoku biblioteki posiada akcję „Usuń”.
+1. Każdy utwór w widoku biblioteki posiada akcję "Usuń".
 2. Po potwierdzeniu utwór jest usuwany z bazy danych i ponownie kwalifikuje się do rekomendacji (o ile nie jest zablokowany).
-3. Gdy w bibliotece znajduje się tylko 1 utwór, akcja „Usuń” jest nieaktywna lub wyświetla komunikat informujący, że minimum jeden utwór musi pozostać.
+3. Gdy w bibliotece znajduje się tylko 1 utwór, akcja "Usuń" jest nieaktywna lub wyświetla komunikat informujący, że minimum jeden utwór musi pozostać.
 4. Operacja zakończona jest komunikatem potwierdzającym (toast/snackbar).
 
 ## 6. Metryki sukcesu

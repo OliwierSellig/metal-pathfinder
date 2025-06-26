@@ -1,0 +1,36 @@
+---
+import Layout from "./Layout.astro";
+import { NavigationContainer } from "../components/navigation/NavigationContainer.tsx";
+import type { User } from "../types";
+
+interface Props {
+  title?: string;
+}
+
+const { title } = Astro.props;
+
+// Get user from middleware - on protected pages user should always exist
+const user = Astro.locals.user;
+
+// Convert middleware user to our User type
+const navigationUser: User | null = user
+  ? {
+      id: user.id,
+      email: user.email,
+      email_confirmed_at: null, // Not available from middleware, but not needed for navigation
+      created_at: "", // Not available from middleware, but not needed for navigation
+      updated_at: "", // Not available from middleware, but not needed for navigation
+    }
+  : null;
+
+// Get current path for active link detection
+const currentPath = Astro.url.pathname;
+---
+
+<Layout title={title}>
+  <!-- Navigation - only show if user is authenticated -->
+  {navigationUser && <NavigationContainer user={navigationUser} currentPath={currentPath} client:load />}
+
+  <!-- Main content -->
+  <slot />
+</Layout>

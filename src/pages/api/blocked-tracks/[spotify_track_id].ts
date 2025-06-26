@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import type { SuccessMessageDTO, SpotifyTrackId } from "../../../types";
 import { BlockedTracksService } from "../../../lib/services/blocked-tracks.service";
 import { validateSpotifyTrackId } from "../../../lib/utils/validation";
-import { TEST_USER_ID } from "../../../db/supabase.client";
+import { TEST_USER_ID } from "../../../db/supabase.server";
 import { TrackNotFoundError, DatabaseError, createErrorResponse, logError } from "../../../lib/utils/errors";
 
 // Disable prerendering for API routes

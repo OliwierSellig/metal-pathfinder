@@ -1,0 +1,13 @@
+---
+import Layout from "../layouts/Layout.astro";
+import AuthFormContainer from "../components/auth/AuthFormContainer.tsx";
+import LoginForm from "../components/auth/LoginForm.tsx";
+
+export const prerender = false;
+---
+
+<Layout title="Sign In - MetalPathfinder">
+  <AuthFormContainer title="Sign In" description="Welcome back! Sign in to discover new metal music." client:load>
+    <LoginForm client:load />
+  </AuthFormContainer>
+</Layout>
