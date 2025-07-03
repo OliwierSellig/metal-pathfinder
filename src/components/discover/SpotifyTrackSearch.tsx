@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "../ui/button";
+import { formatDuration } from "../../lib/utils/track.utils";
 import type { SpotifyTrackSearchDTO, SearchTrackResponseDTO } from "../../types";
 
 interface SpotifyTrackSearchProps {
@@ -77,12 +78,6 @@ const SpotifyTrackSearch: React.FC<SpotifyTrackSearchProps> = ({
       }
     };
   }, []);
-
-  const formatDuration = (durationMs: number): string => {
-    const minutes = Math.floor(durationMs / 60000);
-    const seconds = Math.floor((durationMs % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  };
 
   return (
     <div className="space-y-4">

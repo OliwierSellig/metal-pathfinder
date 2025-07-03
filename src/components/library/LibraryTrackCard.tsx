@@ -1,7 +1,7 @@
 import * as React from "react";
-import type { LibraryTrackViewModel } from "../../types";
 import { Button } from "../ui/button";
-import { formatDuration, getAlbumCoverUrl } from "../../lib/utils/library-track.utils";
+import { formatDuration, getAlbumCoverUrl } from "../../lib/utils/track.utils";
+import type { LibraryTrackViewModel } from "../../types";
 
 // =============================================================================
 // TYPES

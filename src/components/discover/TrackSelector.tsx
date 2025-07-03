@@ -1,5 +1,6 @@
 import React from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { formatDuration } from "../../lib/utils/track.utils";
 import type { LibraryTrackWithDetailsDTO } from "../../types";
 
 interface TrackSelectorProps {
@@ -10,12 +11,6 @@ interface TrackSelectorProps {
 }
 
 const TrackSelector: React.FC<TrackSelectorProps> = ({ tracks, onSelect, disabled, selectedTrackId }) => {
-  const formatDuration = (durationMs: number): string => {
-    const minutes = Math.floor(durationMs / 60000);
-    const seconds = Math.floor((durationMs % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  };
-
   return (
     <div data-testid="track-selector-container">
       <label className="block text-sm font-medium mb-2">Select base track ({tracks.length} tracks in library)</label>
