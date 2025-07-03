@@ -1,5 +1,6 @@
 name = "metal-pathfinder"
-compatibility_date = "2024-12-20"
+compatibility_date = "2025-01-03"
+pages_build_output_dir = "dist"
 
 [env.production]
 kv_namespaces = [
