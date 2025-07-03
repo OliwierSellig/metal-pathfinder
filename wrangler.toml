@@ -2,11 +2,6 @@ name = "metal-pathfinder"
 compatibility_date = "2025-01-03"
 pages_build_output_dir = "dist"
 
-[env.production]
-kv_namespaces = [
-  { binding = "SESSION", id = "YOUR_KV_NAMESPACE_ID", preview_id = "YOUR_PREVIEW_KV_NAMESPACE_ID" }
-]
-
 # Environment variables (these will be set in Cloudflare dashboard)
 [env.production.vars]
 # SUPABASE_URL = "your-supabase-url"
