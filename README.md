@@ -1,6 +1,6 @@
 # MetalPathfinder
 
-A web-based MVP that enables metal music enthusiasts to discover new tracks by describing what they appreciate in a selected piece from their library. The system integrates with Spotify for music metadata, and utilizes OpenAI API to generate personalized recommendations.
+A web-based MVP that enables metal music enthusiasts to discover new tracks by describing what they appreciate in a selected piece from their library. The system integrates with Spotify for music data, and utilizes OpenAI API to generate personalized recommendations.
 
 ## Table of Contents
 
