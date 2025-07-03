@@ -32,3 +32,27 @@ export const createSupabaseServerInstance = (context: { headers: Headers; cookie
 
   return supabase;
 };
+
+/**
+ * Creates a Supabase client for E2E tests using test environment variables
+ * This connects to the test database with real operations
+ */
+export const createTestSupabaseInstance = (context: { headers: Headers; cookies: AstroCookies }) => {
+  // Use test environment variables when available
+  const testUrl = process.env.SUPABASE_URL || import.meta.env.SUPABASE_URL;
+  const testKey = process.env.SUPABASE_PUBLIC_KEY || import.meta.env.SUPABASE_KEY;
+
+  const supabase = createServerClient<Database>(testUrl, testKey, {
+    cookieOptions,
+    cookies: {
+      getAll() {
+        return parseCookieHeader(context.headers.get("Cookie") ?? "");
+      },
+      setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
+        cookiesToSet.forEach(({ name, value, options }) => context.cookies.set(name, value, options));
+      },
+    },
+  });
+
+  return supabase;
+};

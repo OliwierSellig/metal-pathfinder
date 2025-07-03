@@ -13,6 +13,7 @@ interface RecommendationCardProps {
   onAddToLibrary: (trackId: string) => void;
   onBlockTrack: (trackId: string, duration: BlockDuration) => void;
   onViewDetails: (track: RecommendationCardViewModel) => void;
+  index?: number; // Add index for test identification
 }
 
 const RecommendationCard: React.FC<RecommendationCardProps> = ({
@@ -20,6 +21,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
   onAddToLibrary,
   onBlockTrack,
   onViewDetails,
+  index,
 }) => {
   const formatDuration = (durationMs: number): string => {
     const minutes = Math.floor(durationMs / 60000);
@@ -111,6 +113,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-blue-600 hover:bg-blue-700"
             }`}
+            data-testid={index !== undefined ? `add-button-${index}` : undefined}
           >
             {addButtonState.text}
           </Button>
@@ -129,6 +132,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
                       ? "border-gray-300 text-gray-500 bg-gray-50 cursor-not-allowed"
                       : "border-red-300 text-red-700 hover:bg-red-50 hover:border-red-400"
                 }`}
+                data-testid={index !== undefined ? `block-button-${index}` : undefined}
               >
                 {blockButtonState.text}
               </Button>
@@ -147,7 +151,13 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
           </DropdownMenu>
 
           {/* View Details Button */}
-          <Button size="sm" variant="outline" onClick={() => onViewDetails(track)} className="w-full text-xs">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onViewDetails(track)}
+            className="w-full text-xs"
+            data-testid={index !== undefined ? `details-button-${index}` : undefined}
+          >
             Details
           </Button>
         </div>

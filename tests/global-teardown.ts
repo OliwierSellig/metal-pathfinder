@@ -1,20 +1,24 @@
+import { config } from "dotenv";
+import { testDb } from "./utils/test-db-helper";
+
+// Load test environment variables
+config({ path: ".env.test" });
+
 async function globalTeardown() {
   console.log("🧹 Starting global teardown for Playwright tests");
 
   try {
-    // Clean up any global resources
-    // For example: close database connections, clean test data, etc.
-
-    // If you have any test data cleanup, add it here
-    console.log("🗑️  Cleaning up test data...");
-
-    // You can add database cleanup, file cleanup, etc. here
+    // Clean test database after running tests
+    const testUserId = process.env.E2E_USERNAME_ID || "ff5f16c8-d72b-4078-a946-4ab3cffba27e";
+    console.log("🧹 Cleaning test database...");
+    await testDb.cleanUserData(testUserId);
+    console.log("✅ Test database cleaned");
   } catch (error) {
     console.error("❌ Global teardown failed:", error);
-    // Don't throw here, as we want tests to finish gracefully
+    // Don't throw - we don't want to fail tests because of cleanup issues
   }
 
-  console.log("✅ Global teardown completed successfully");
+  console.log("✅ Global teardown completed");
 }
 
 export default globalTeardown;

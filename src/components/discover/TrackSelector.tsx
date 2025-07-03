@@ -17,15 +17,20 @@ const TrackSelector: React.FC<TrackSelectorProps> = ({ tracks, onSelect, disable
   };
 
   return (
-    <div>
+    <div data-testid="track-selector-container">
       <label className="block text-sm font-medium mb-2">Select base track ({tracks.length} tracks in library)</label>
       <Select value={selectedTrackId || ""} onValueChange={onSelect} disabled={disabled}>
-        <SelectTrigger className="w-full">
+        <SelectTrigger className="w-full" data-testid="track-selector-trigger">
           <SelectValue placeholder="Choose a track from your library..." />
         </SelectTrigger>
-        <SelectContent className="max-h-60 w-[400px]">
+        <SelectContent className="max-h-60 w-[400px]" data-testid="track-selector-dropdown">
           {tracks.map((track) => (
-            <SelectItem key={track.spotify_track_id} value={track.spotify_track_id} className="p-2">
+            <SelectItem
+              key={track.spotify_track_id}
+              value={track.spotify_track_id}
+              className="p-2"
+              data-testid={`track-option-${track.spotify_track_id}`}
+            >
               <div className="flex items-center gap-2 w-full min-w-0">
                 {/* Album Art */}
                 <div className="flex-shrink-0">

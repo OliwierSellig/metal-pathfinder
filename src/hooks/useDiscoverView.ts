@@ -85,6 +85,7 @@ export function useDiscoverView() {
       }));
 
       const response = await fetch("/api/library");
+
       if (!response.ok) {
         throw new Error(`Failed to load library: ${response.status}`);
       }
@@ -108,6 +109,7 @@ export function useDiscoverView() {
 
       // Fetch Spotify details for all tracks
       const trackIds = libraryData.tracks.map((track) => track.spotify_track_id);
+
       const spotifyResponse = await fetch("/api/spotify/tracks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -190,9 +192,10 @@ export function useDiscoverView() {
       setState((prev) => ({
         ...prev,
         recommendations: {
-          ...prev.recommendations,
+          list: [], // Clear previous recommendations
           isLoading: true,
           error: null,
+          metadata: null, // Clear previous metadata
         },
       }));
 

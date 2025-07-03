@@ -26,7 +26,7 @@ const TemperatureSlider: React.FC<TemperatureSliderProps> = ({ value, onValueCha
   };
 
   return (
-    <div>
+    <div data-testid="temperature-slider-container">
       <label className="block text-sm font-medium mb-2">
         Temperature: {getTemperatureLabel(value)} ({value.toFixed(1)})
       </label>
@@ -40,6 +40,7 @@ const TemperatureSlider: React.FC<TemperatureSliderProps> = ({ value, onValueCha
           step={0.1}
           disabled={disabled}
           className="w-full"
+          data-testid="temperature-slider"
         />
 
         <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -48,7 +49,9 @@ const TemperatureSlider: React.FC<TemperatureSliderProps> = ({ value, onValueCha
         </div>
       </div>
 
-      <p className="text-xs text-gray-600 mt-2">{getTemperatureDescription(value)}</p>
+      <p className="text-xs text-gray-600 mt-2" data-testid="temperature-description">
+        {getTemperatureDescription(value)}
+      </p>
     </div>
   );
 };

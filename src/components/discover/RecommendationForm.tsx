@@ -3,10 +3,10 @@ import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import TrackSelector from "./TrackSelector.tsx";
 import TemperatureSlider from "./TemperatureSlider.tsx";
-import type { LibraryTrackDTO, AIRecommendationsCommand } from "../../types";
+import type { LibraryTrackWithDetailsDTO, AIRecommendationsCommand } from "../../types";
 
 interface RecommendationFormProps {
-  libraryTracks: LibraryTrackDTO[];
+  libraryTracks: LibraryTrackWithDetailsDTO[];
   isLoading: boolean;
   onSubmit: (command: AIRecommendationsCommand) => void;
 }
@@ -87,10 +87,10 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({ libraryTracks, 
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white rounded-lg shadow-md p-6" data-testid="recommendation-form-container">
       <h2 className="text-xl font-semibold mb-4">Generate Recommendations</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" data-testid="recommendation-form">
         {/* Track Selector */}
         <div>
           <TrackSelector
@@ -100,7 +100,9 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({ libraryTracks, 
             selectedTrackId={formData.base_track_id}
           />
           {validationErrors.base_track_id && (
-            <p className="text-red-500 text-sm mt-1">{validationErrors.base_track_id}</p>
+            <p className="text-red-500 text-sm mt-1" data-testid="track-selector-error">
+              {validationErrors.base_track_id}
+            </p>
           )}
         </div>
 
@@ -117,15 +119,20 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({ libraryTracks, 
             disabled={isLoading}
             rows={4}
             className="resize-none"
+            data-testid="description-textarea"
           />
           <div className="flex justify-between items-center mt-1">
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-gray-500" data-testid="description-character-counter">
               {formData.description.trim().length}/500 characters
               {formData.description.trim().length < 30 && (
                 <span className="text-amber-600 ml-1">(minimum 30 characters)</span>
               )}
             </div>
-            {validationErrors.description && <p className="text-red-500 text-xs">{validationErrors.description}</p>}
+            {validationErrors.description && (
+              <p className="text-red-500 text-xs" data-testid="description-error">
+                {validationErrors.description}
+              </p>
+            )}
           </div>
         </div>
 
@@ -139,7 +146,12 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({ libraryTracks, 
         </div>
 
         {/* Submit Button */}
-        <Button type="submit" disabled={!isFormValid || isLoading} className="w-full">
+        <Button
+          type="submit"
+          disabled={!isFormValid || isLoading}
+          className="w-full"
+          data-testid="generate-recommendations-button"
+        >
           {isLoading ? "Generating..." : "Generate Recommendations"}
         </Button>
       </form>
