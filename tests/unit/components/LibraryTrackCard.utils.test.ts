@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatDuration, getAlbumCoverUrl } from "../../../src/lib/utils/library-track.utils";
+import { formatDuration, getAlbumCoverUrl } from "../../../src/lib/utils/track.utils";
 
 // =============================================================================
 // TESTS FOR formatDuration()
